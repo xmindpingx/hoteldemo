@@ -1,0 +1,73 @@
+<%
+  const g = site.general, hero = site.hero;
+  const images = (hero.images || []).filter((i) => i && i.url);
+  const addr = h.fullAddress(g.address);
+  const book = h.bookingHref(site);
+  const cta = hero.ctaHref || book;
+  const external = g.bookingMode === 'external' && g.bookingUrl;
+%>
+<section class="relative bg-brand-dark text-white overflow-hidden" data-hero data-interval="<%= Number(hero.slideInterval) || 7 %>">
+  <div class="absolute inset-0">
+    <% if (images.length) { images.forEach((img, i) => { %>
+      <img src="<%= img.url %>" alt="<%= img.alt || '' %>" class="hero-slide absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 <%= i === 0 ? 'opacity-100' : 'opacity-0' %>" <%= i === 0 ? 'fetchpriority="high"' : 'loading="lazy"' %> onerror="this.style.display='none'">
+    <% }) } else { %>
+      <div class="absolute inset-0 bg-gradient-to-br from-brand to-brand-dark"></div>
+    <% } %>
+    <div class="absolute inset-0 hero-overlay"></div>
+  </div>
+
+  <div class="relative max-w-page mx-auto px-4 pt-24 pb-28 lg:pt-36 lg:pb-36 min-h-[520px] lg:min-h-[640px] flex items-end">
+    <div class="max-w-3xl">
+      <% if (hero.badge) { %><span class="inline-flex items-center gap-2 rounded-full bg-accent/90 text-white text-xs font-semibold uppercase tracking-wider px-3 py-1 mb-5"><%- icon('sparkles', 'w-3.5 h-3.5') %><%= hero.badge %></span><% } %>
+      <% if (g.brandLine) { %><div class="text-sm uppercase tracking-[0.25em] text-white/80 mb-3"><%= g.brandLine %></div><% } %>
+      <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl leading-[1.05] drop-shadow-sm"><%= h.heroHeading(site) %></h1>
+      <% if (hero.subheading) { %><p class="mt-5 text-base sm:text-lg text-white/90 max-w-2xl leading-relaxed"><%= hero.subheading %></p><% } %>
+      <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/85">
+        <% if (addr) { %><a href="<%= h.directionsUrl(site.area, g) %>" target="_blank" rel="noopener" class="inline-flex items-center gap-2 hover:text-white"><%- icon('map-pin', 'w-4 h-4 text-accent') %><%= addr %></a><% } %>
+        <% if (g.showRating && Number(g.reviewScore) > 0) { %>
+          <span class="inline-flex items-center gap-2"><%- h.stars(g.reviewScore) %><span class="font-semibold"><%= g.reviewScore %></span><% if (g.reviewCount) { %><span class="text-white/70">(<%= g.reviewCount %> reviews)</span><% } %></span>
+        <% } %>
+      </div>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <% if (hero.ctaText) { %><a href="<%= cta %>" <%= external && cta === g.bookingUrl ? 'target="_blank" rel="noopener"' : '' %> class="btn btn-accent px-6 py-3 text-base"><%= hero.ctaText %><%- icon('arrow-right', 'w-4 h-4') %></a><% } %>
+        <% if (hero.secondaryCtaText && hero.secondaryCtaHref) { %><a href="<%= hero.secondaryCtaHref %>" class="btn btn-ghost px-6 py-3 text-base"><%= hero.secondaryCtaText %></a><% } %>
+      </div>
+    </div>
+  </div>
+
+  <% if (images.length > 1) { %>
+  <div class="absolute bottom-4 right-4 lg:bottom-8 lg:right-8 flex gap-2" data-hero-dots>
+    <% images.forEach((img, i) => { %><button type="button" class="w-2.5 h-2.5 rounded-full border border-white/70 <%= i === 0 ? 'bg-white' : 'bg-transparent' %>" data-hero-dot="<%= i %>" aria-label="Show image <%= i + 1 %>"></button><% }) %>
+  </div>
+  <% } %>
+</section>
+
+<% if (hero.showBookingBar) { %>
+<div class="relative z-10 max-w-page mx-auto px-4 -mt-12 lg:-mt-14">
+  <% if (external) { %>
+    <div class="bg-white rounded-xl shadow-xl ring-1 ring-black/5 p-5 lg:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="font-heading text-xl text-gray-900">Ready to book?</div>
+        <div class="text-sm text-gray-600">Check live availability and rates on our booking page.</div>
+      </div>
+      <a href="<%= g.bookingUrl %>" target="_blank" rel="noopener" class="btn btn-primary px-6 py-3"><%= g.bookNowLabel || 'Check Rates' %><%- icon('external', 'w-4 h-4') %></a>
+    </div>
+  <% } else { %>
+    <form action="/contact" method="get" class="bg-white rounded-xl shadow-xl ring-1 ring-black/5 p-4 lg:p-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.8fr_0.8fr_auto] items-end" data-booking-bar>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Check-in
+        <input type="date" name="checkin" class="field mt-1" data-checkin>
+      </label>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Check-out
+        <input type="date" name="checkout" class="field mt-1" data-checkout>
+      </label>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Guests
+        <select name="guests" class="field mt-1"><% for (let i = 1; i <= 8; i++) { %><option value="<%= i %>" <%= i === 2 ? 'selected' : '' %>><%= i %> guest<%= i > 1 ? 's' : '' %></option><% } %></select>
+      </label>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Suites
+        <select name="rooms" class="field mt-1"><% for (let i = 1; i <= 5; i++) { %><option value="<%= i %>"><%= i %> suite<%= i > 1 ? 's' : '' %></option><% } %></select>
+      </label>
+      <button type="submit" class="btn btn-primary px-6 py-3 h-[46px] w-full lg:w-auto"><%= g.bookNowLabel || 'Check Rates' %></button>
+    </form>
+  <% } %>
+</div>
+<% } %>

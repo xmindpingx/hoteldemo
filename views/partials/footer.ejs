@@ -1,0 +1,67 @@
+<%
+  const g = site.general, f = site.footer;
+  const addr = h.fullAddress(g.address);
+  const links = (f.links || []).filter((l) => l.label && l.href);
+  const social = (f.social || []).filter((s) => s.network && s.url);
+  const copyright = (f.copyright || '').replace('{year}', String(h.year()));
+%>
+</main>
+<footer class="bg-brand-dark text-white/85 mt-16">
+  <div class="max-w-page mx-auto px-4 py-12 lg:py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+    <div class="lg:col-span-2">
+      <div class="flex items-center gap-3 mb-4">
+        <% if (g.logoUrl) { %><img src="<%= g.logoUrl %>" alt="" class="h-10 w-auto object-contain brightness-0 invert"><% } else { %><span class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white/10"><%- icon('building', 'w-5 h-5') %></span><% } %>
+        <div>
+          <div class="font-heading text-xl text-white"><%= h.fullName(g) %></div>
+          <% if (g.brandLine) { %><div class="text-xs uppercase tracking-[0.18em] text-white/60"><%= g.brandLine %></div><% } %>
+        </div>
+      </div>
+      <% if (f.about) { %><p class="text-sm leading-relaxed max-w-md text-white/75"><%- h.nl2br(f.about) %></p><% } %>
+      <% if (social.length) { %>
+      <div class="flex items-center gap-2 mt-5">
+        <% social.forEach((s) => { %>
+          <a href="<%= s.url %>" target="_blank" rel="noopener" aria-label="<%= s.network %>" class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-accent hover:text-white transition"><%- icon(s.network, 'w-4 h-4') %></a>
+        <% }) %>
+      </div>
+      <% } %>
+    </div>
+    <% if (links.length) { %>
+    <div>
+      <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Explore</h3>
+      <ul class="space-y-2 text-sm">
+        <% links.forEach((l) => { %><li><a href="<%= l.href %>" class="hover:text-accent transition"><%= l.label %></a></li><% }) %>
+      </ul>
+    </div>
+    <% } %>
+    <div>
+      <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Contact</h3>
+      <ul class="space-y-3 text-sm">
+        <% if (addr) { %><li class="flex gap-3"><%- icon('map-pin', 'w-4 h-4 mt-0.5 text-accent shrink-0') %><a href="<%= h.directionsUrl(site.area, g) %>" target="_blank" rel="noopener" class="hover:text-accent"><%= addr %></a></li><% } %>
+        <% if (g.phone) { %><li class="flex gap-3"><%- icon('phone', 'w-4 h-4 mt-0.5 text-accent shrink-0') %><a href="<%= h.telHref(g.phone) %>" class="hover:text-accent"><%= g.phone %></a></li><% } %>
+        <% if (g.email) { %><li class="flex gap-3"><%- icon('mail', 'w-4 h-4 mt-0.5 text-accent shrink-0') %><a href="mailto:<%= g.email %>" class="hover:text-accent break-all"><%= g.email %></a></li><% } %>
+        <% if (site.contact.hours) { %><li class="flex gap-3"><%- icon('clock', 'w-4 h-4 mt-0.5 text-accent shrink-0') %><span><%= site.contact.hours %></span></li><% } %>
+        <% if (g.checkInTime || g.checkOutTime) { %><li class="flex gap-3"><%- icon('key', 'w-4 h-4 mt-0.5 text-accent shrink-0') %><span><% if (g.checkInTime) { %>Check-in <%= g.checkInTime %><% } %><% if (g.checkInTime && g.checkOutTime) { %> · <% } %><% if (g.checkOutTime) { %>Check-out <%= g.checkOutTime %><% } %></span></li><% } %>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="max-w-page mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/55">
+      <div><%= copyright %><% if (f.bottomNote) { %> · <%= f.bottomNote %><% } %></div>
+      <div class="flex items-center gap-4">
+        <% if (f.showAdminLink !== false) { %><a href="/admin" class="hover:text-white inline-flex items-center gap-1"><%- icon('lock', 'w-3 h-3') %> Site Admin</a><% } %>
+      </div>
+    </div>
+  </div>
+</footer>
+<div id="lightbox" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/90 p-4" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <button type="button" class="absolute top-4 right-4 text-white/80 hover:text-white" data-lb-close aria-label="Close"><%- icon('x', 'w-8 h-8') %></button>
+  <button type="button" class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white" data-lb-prev aria-label="Previous"><%- icon('chevron-left', 'w-10 h-10') %></button>
+  <button type="button" class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white" data-lb-next aria-label="Next"><%- icon('chevron-right', 'w-10 h-10') %></button>
+  <figure class="max-w-6xl w-full text-center">
+    <img src="" alt="" class="mx-auto max-h-[80vh] w-auto rounded-md shadow-2xl" data-lb-img>
+    <figcaption class="text-white/80 mt-3 text-sm" data-lb-caption></figcaption>
+  </figure>
+</div>
+<script src="/js/site.js?v=1" defer></script>
+</body>
+</html>

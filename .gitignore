@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# live content & secrets (regenerated from data/defaults.json on first run)
+data/site.json
+data/site.json.tmp
+data/inquiries.json
+data/inquiries.json.tmp
+data/admin.json
+data/.secret
+data/backups/
+
+# uploaded media (keep the folder, not the files)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# env & logs
+.env
+*.log
+logs/
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/

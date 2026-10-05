@@ -1,0 +1,24 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<% if (site.hero.enabled !== false) { %><%- include('partials/hero') %><% } %>
+<%- include('partials/custom-sections', { position: 'after-hero' }) %>
+<%
+  const renderers = {
+    promotions: () => include('partials/section-promotions'),
+    overview: () => include('partials/section-overview'),
+    rooms: () => include('partials/section-rooms', { limit: 3 }),
+    amenities: () => include('partials/section-amenities', { compact: true }),
+    dining: () => include('partials/section-dining', { compact: true }),
+    area: () => include('partials/section-area', { compact: true }),
+    gallery: () => include('partials/section-gallery', { compact: true }),
+    reviews: () => include('partials/section-reviews', { compact: true }),
+    faq: () => include('partials/section-faq'),
+    contact: () => include('partials/section-contact-cta'),
+  };
+  const order = Array.isArray(site.layout.homeOrder) ? site.layout.homeOrder : Object.keys(renderers);
+  order.forEach((key) => {
+    if (renderers[key]) { %><%- renderers[key]() %><%- include('partials/custom-sections', { position: 'after-' + key }) %><% }
+  });
+%>
+<%- include('partials/custom-sections', { position: 'before-footer' }) %>
+<%- include('partials/footer') %>

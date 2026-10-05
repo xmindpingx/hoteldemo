@@ -1,0 +1,26 @@
+<%
+  const promos = h.enabledItems(site.promotions.items).filter((p) => p.title || p.text);
+  if (site.promotions.enabled !== false && promos.length) {
+  const styles = {
+    accent: 'bg-accent text-white',
+    dark: 'bg-brand-dark text-white',
+    light: 'bg-brand-light text-gray-900',
+    info: 'bg-sand text-gray-900',
+  };
+%>
+<section class="max-w-page mx-auto px-4 pt-16 lg:pt-20" id="offers">
+  <% if (site.promotions.heading) { %><div class="eyebrow mb-4"><%= site.promotions.heading %></div><% } %>
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <% promos.forEach((p) => { const cls = styles[p.style] || styles.light; const onDark = cls.includes('text-white'); %>
+      <div class="rounded-xl p-6 flex flex-col <%= cls %>">
+        <% if (p.title) { %><h3 class="font-heading text-xl mb-2"><%= p.title %></h3><% } %>
+        <% if (p.text) { %><p class="text-sm leading-relaxed <%= onDark ? 'text-white/85' : 'text-gray-600' %> flex-1"><%= p.text %></p><% } %>
+        <div class="mt-5 flex items-center justify-between gap-3">
+          <% if (p.ctaText && p.ctaHref) { %><a href="<%= p.ctaHref %>" class="inline-flex items-center gap-2 text-sm font-semibold <%= onDark ? 'text-white hover:text-white/80' : 'text-brand hover:text-accent' %>"><%= p.ctaText %><%- icon('arrow-right', 'w-4 h-4') %></a><% } %>
+          <% if (p.code) { %><span class="text-xs font-mono px-2 py-1 rounded <%= onDark ? 'bg-white/15' : 'bg-white ring-1 ring-black/10' %>">Code: <%= p.code %></span><% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
+<% } %>

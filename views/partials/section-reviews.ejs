@@ -1,0 +1,45 @@
+<%
+  const rv = site.reviews;
+  const g = site.general;
+  const _compact = typeof compact !== 'undefined' && compact;
+  const items = h.enabledItems(rv.items).filter((x) => x && (x.text || x.title));
+  if (rv.enabled !== false && items.length) {
+  const shown = _compact ? items.slice(0, 3) : items;
+  const avg = items.length ? (items.reduce((s, r) => s + (Number(r.rating) || 0), 0) / items.length) : 0;
+  const score = Number(g.reviewScore) > 0 ? Number(g.reviewScore) : Math.round(avg * 10) / 10;
+  const count = Number(g.reviewCount) > 0 ? Number(g.reviewCount) : items.length;
+%>
+<section class="max-w-page mx-auto px-4 py-16 lg:py-24" id="reviews">
+  <div class="grid gap-10 lg:grid-cols-12 items-start">
+    <div class="lg:col-span-4">
+      <div class="eyebrow">Reviews</div>
+      <h2 class="font-heading text-3xl lg:text-4xl text-gray-900 leading-tight"><%= rv.heading || 'Guest Reviews' %></h2>
+      <% if (rv.intro) { %><p class="mt-3 text-gray-600"><%= rv.intro %></p><% } %>
+      <div class="mt-6 rounded-2xl bg-sand p-6 inline-flex items-center gap-5">
+        <div class="font-heading text-5xl text-brand"><%= score %></div>
+        <div>
+          <%- h.stars(score, 'w-5 h-5') %>
+          <div class="text-sm text-gray-600 mt-1"><%= count %> guest review<%= count === 1 ? '' : 's' %></div>
+        </div>
+      </div>
+      <% if (_compact && items.length > 3) { %><div class="mt-6"><a href="/reviews" class="inline-flex items-center gap-2 text-brand font-semibold hover:text-accent">Read all reviews<%- icon('arrow-right', 'w-4 h-4') %></a></div><% } %>
+    </div>
+    <div class="lg:col-span-8 grid gap-5 md:grid-cols-2 <%= _compact ? '' : 'xl:grid-cols-3' %>">
+      <% shown.forEach((r) => { %>
+        <blockquote class="rounded-2xl ring-1 ring-black/5 bg-white p-6 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between gap-3">
+            <%- h.stars(r.rating) %>
+            <% if (r.date) { %><span class="text-xs text-gray-400"><%= r.date %></span><% } %>
+          </div>
+          <% if (r.title) { %><div class="mt-3 font-semibold text-gray-900"><%= r.title %></div><% } %>
+          <% if (r.text) { %><p class="mt-2 text-sm text-gray-600 leading-relaxed flex-1">“<%= r.text %>”</p><% } %>
+          <footer class="mt-4 flex items-center gap-3">
+            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-brand-light text-brand text-sm font-semibold"><%= String(r.name || '?').trim().charAt(0).toUpperCase() %></span>
+            <div class="text-sm"><div class="font-medium text-gray-900"><%= r.name %></div><% if (r.location) { %><div class="text-gray-500"><%= r.location %></div><% } %></div>
+          </footer>
+        </blockquote>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>

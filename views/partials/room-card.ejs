@@ -1,0 +1,37 @@
+<%
+  const g = site.general;
+  const price = h.money(room.priceFrom, g.currency);
+  const book = room.bookHref || (g.bookingMode === 'external' && g.bookingUrl ? g.bookingUrl : `/contact?room=${encodeURIComponent(room.name)}`);
+  const specs = [
+    room.sqft ? { icon: 'ruler', text: `${room.sqft} sq ft` } : null,
+    room.beds ? { icon: 'bed', text: room.beds } : null,
+    room.sleeps ? { icon: 'users', text: `Sleeps ${room.sleeps}` } : null,
+    room.bathrooms ? { icon: 'bath', text: `${room.bathrooms} bath${Number(room.bathrooms) > 1 ? 's' : ''}` } : null,
+  ].filter(Boolean);
+%>
+<article class="group bg-white rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-sm hover:shadow-xl transition-shadow flex flex-col">
+  <a href="/suites/<%= room.slug %>" class="block relative aspect-[4/3] overflow-hidden bg-gray-100">
+    <% if (room.image) { %><img src="<%= room.image %>" alt="<%= room.name %>" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy"><% } else { %><div class="w-full h-full flex items-center justify-center text-gray-300"><%- icon('image', 'w-12 h-12') %></div><% } %>
+    <% if (room.type) { %><span class="absolute top-3 left-3 text-[11px] font-semibold uppercase tracking-wider bg-white/95 text-gray-800 px-2.5 py-1 rounded-full"><%= room.type %></span><% } %>
+    <% if (room.featured) { %><span class="absolute top-3 right-3 text-[11px] font-semibold uppercase tracking-wider bg-accent text-white px-2.5 py-1 rounded-full">Popular</span><% } %>
+  </a>
+  <div class="p-5 flex flex-col flex-1">
+    <h3 class="font-heading text-xl text-gray-900"><a href="/suites/<%= room.slug %>" class="hover:text-brand"><%= room.name %></a></h3>
+    <% if (specs.length) { %>
+    <ul class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
+      <% specs.forEach((s) => { %><li class="inline-flex items-center gap-1.5"><%- icon(s.icon, 'w-4 h-4 text-brand') %><%= s.text %></li><% }) %>
+    </ul>
+    <% } %>
+    <% if (room.shortDescription) { %><p class="mt-3 text-sm text-gray-600 leading-relaxed flex-1"><%= room.shortDescription %></p><% } %>
+    <div class="mt-5 flex items-end justify-between gap-3">
+      <div>
+        <% if (price) { %><div class="text-xs text-gray-500">From</div><div class="font-heading text-2xl text-gray-900"><%= price %></div><% } %>
+        <% if (room.priceNote) { %><div class="text-xs text-gray-500"><%= room.priceNote %></div><% } %>
+      </div>
+      <div class="flex gap-2">
+        <a href="/suites/<%= room.slug %>" class="btn btn-outline text-sm px-3 py-2">Details</a>
+        <a href="<%= book %>" class="btn btn-primary text-sm px-3 py-2">Book</a>
+      </div>
+    </div>
+  </div>
+</article>

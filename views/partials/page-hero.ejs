@@ -1,0 +1,15 @@
+<%
+  // usage: include('partials/page-hero', { heading, intro, image, eyebrow })
+  const _image = typeof image !== 'undefined' && image ? image : ((site.hero.images[0] && site.hero.images[0].url) || '');
+  const _intro = typeof intro !== 'undefined' ? intro : '';
+  const _eyebrow = typeof eyebrow !== 'undefined' ? eyebrow : '';
+%>
+<section class="relative bg-brand-dark text-white overflow-hidden">
+  <% if (_image) { %><img src="<%= _image %>" alt="" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'"><% } %>
+  <div class="absolute inset-0 hero-overlay"></div>
+  <div class="relative max-w-page mx-auto px-4 py-20 lg:py-28">
+    <% if (_eyebrow) { %><div class="text-sm uppercase tracking-[0.25em] text-white/80 mb-3"><%= _eyebrow %></div><% } %>
+    <h1 class="font-heading text-4xl lg:text-5xl leading-tight"><%= heading %></h1>
+    <% if (_intro) { %><p class="mt-4 max-w-2xl text-white/85 leading-relaxed"><%= _intro %></p><% } %>
+  </div>
+</section>

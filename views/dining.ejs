@@ -1,0 +1,8 @@
+<%- include('partials/head', { description: site.dining.intro }) %>
+<%- include('partials/header') %>
+<% const d0 = (site.dining.items || []).find((d) => d && d.image); %>
+<%- include('partials/page-hero', { eyebrow: 'Dining', heading: site.dining.heading || 'Dining', intro: site.dining.intro, image: d0 && d0.image }) %>
+<%- include('partials/section-dining', { compact: false }) %>
+<%- include('partials/custom-sections', { position: 'page-dining' }) %>
+<%- include('partials/section-contact-cta') %>
+<%- include('partials/footer') %>

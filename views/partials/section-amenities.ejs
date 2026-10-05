@@ -1,0 +1,60 @@
+<%
+  const a = site.amenities;
+  const _compact = typeof compact !== 'undefined' && compact;
+  const featured = (a.featured || []).filter((x) => x && x.title);
+  const categories = (a.categories || []).filter((c) => c && c.name && (c.items || []).length);
+  const policies = (a.policies || []).filter((p) => p && p.title);
+  if (a.enabled !== false && (featured.length || categories.length || a.heading)) {
+%>
+<section class="max-w-page mx-auto px-4 py-16 lg:py-24" id="amenities">
+  <%- include('section-heading', { eyebrow: 'Amenities', heading: a.heading || 'Hotel Amenities', intro: a.intro, link: _compact ? { href: '/amenities', label: 'All amenities & policies' } : null }) %>
+
+  <% if (featured.length) { const shown = _compact ? featured.slice(0, 3) : featured; %>
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <% shown.forEach((f) => { %>
+      <div class="rounded-2xl overflow-hidden ring-1 ring-black/5 bg-white shadow-sm">
+        <% if (f.image) { %><img src="<%= f.image %>" alt="<%= f.title %>" class="w-full aspect-[16/10] object-cover" loading="lazy"><% } %>
+        <div class="p-5">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-brand-light text-brand shrink-0"><%- icon(f.icon || 'check', 'w-5 h-5') %></span>
+            <h3 class="font-heading text-xl text-gray-900"><%= f.title %></h3>
+          </div>
+          <% if (f.text) { %><p class="mt-3 text-sm text-gray-600 leading-relaxed"><%= f.text %></p><% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+  <% } %>
+
+  <% if (!_compact && categories.length) { %>
+  <div class="mt-14 grid gap-8 md:grid-cols-2">
+    <% categories.forEach((c) => { %>
+      <div class="rounded-2xl bg-sand p-6 lg:p-8">
+        <h3 class="font-heading text-xl text-gray-900 mb-4"><%= c.name %></h3>
+        <ul class="grid sm:grid-cols-2 gap-x-4 gap-y-2.5 text-sm text-gray-700">
+          <% c.items.filter(Boolean).forEach((it) => { %><li class="flex items-start gap-2"><%- icon('check', 'w-4 h-4 mt-0.5 text-accent shrink-0') %><span><%= it %></span></li><% }) %>
+        </ul>
+      </div>
+    <% }) %>
+  </div>
+  <% } else if (_compact && categories.length) { %>
+  <div class="mt-10 flex flex-wrap gap-2">
+    <% categories.flatMap((c) => c.items).filter(Boolean).slice(0, 14).forEach((it) => { %><span class="inline-flex items-center gap-1.5 text-sm bg-sand text-gray-700 px-3 py-1.5 rounded-full"><%- icon('check', 'w-3.5 h-3.5 text-accent') %><%= it %></span><% }) %>
+  </div>
+  <% } %>
+
+  <% if (!_compact && policies.length) { %>
+  <div class="mt-14">
+    <h3 class="font-heading text-2xl text-gray-900 mb-6">Policies</h3>
+    <div class="grid gap-6 md:grid-cols-3">
+      <% policies.forEach((p) => { %>
+        <div id="<%= p.anchor || p.id %>" class="rounded-2xl ring-1 ring-black/5 p-6 bg-white scroll-mt-28">
+          <h4 class="font-semibold text-gray-900"><%= p.title %></h4>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed"><%- h.nl2br(p.text) %></p>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+</section>
+<% } %>

@@ -1,0 +1,8 @@
+<%- include('partials/head', { description: site.area.intro }) %>
+<%- include('partials/header') %>
+<% const a0 = (site.area.attractions || []).find((a) => a && a.image); %>
+<%- include('partials/page-hero', { eyebrow: 'Local Area', heading: site.area.heading || 'Local Area', intro: site.area.intro, image: a0 && a0.image }) %>
+<%- include('partials/section-area', { compact: false }) %>
+<%- include('partials/custom-sections', { position: 'page-area' }) %>
+<%- include('partials/section-contact-cta') %>
+<%- include('partials/footer') %>

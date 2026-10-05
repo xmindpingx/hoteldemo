@@ -1,0 +1,10 @@
+<%
+  // usage: include('partials/custom-sections', { position: 'after-hero' })
+  const list = (site.customSections || []).filter((s) => s && s.enabled !== false && s.position === position && (s.html || s.title));
+  list.forEach((s) => {
+%>
+<section class="max-w-page mx-auto px-4 py-12 lg:py-16 custom-section" id="<%= s.anchor || s.id %>">
+  <% if (s.title) { %><h2 class="font-heading text-3xl lg:text-4xl text-gray-900 mb-6"><%= s.title %></h2><% } %>
+  <div class="prose max-w-none"><%- s.html || '' %></div>
+</section>
+<% }) %>

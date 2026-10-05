@@ -1,0 +1,30 @@
+<%
+  const ga = site.gallery;
+  const _compact = typeof compact !== 'undefined' && compact;
+  const items = (ga.items || []).filter((x) => x && x.image);
+  const cats = [...new Set(items.map((i) => i.category).filter(Boolean))];
+  if (ga.enabled !== false && (items.length || ga.heading)) {
+  const shown = _compact ? items.slice(0, 8) : items;
+%>
+<section class="bg-sand py-16 lg:py-24" id="gallery">
+  <div class="max-w-page mx-auto px-4">
+    <%- include('section-heading', { eyebrow: 'Gallery', heading: ga.heading || 'Gallery', intro: ga.intro, link: _compact && items.length > 8 ? { href: '/gallery', label: `All ${items.length} photos` } : null }) %>
+    <% if (!_compact && cats.length > 1) { %>
+    <div class="flex flex-wrap gap-2 mb-8" data-filter-group="gallery">
+      <button type="button" class="chip is-active" data-filter="*">All</button>
+      <% cats.forEach((c) => { %><button type="button" class="chip" data-filter="<%= c %>"><%= c %></button><% }) %>
+    </div>
+    <% } %>
+    <% if (shown.length) { %>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4" data-filter-items="gallery" data-lightbox-group>
+      <% shown.forEach((g, i) => { %>
+        <a href="<%= g.image %>" class="group relative block overflow-hidden rounded-xl bg-gray-200 aspect-[4/3] <%= !_compact && i % 7 === 0 ? 'md:col-span-2 md:row-span-2 md:aspect-auto' : '' %>" data-category="<%= g.category || '' %>" data-lightbox data-caption="<%= g.caption || '' %>">
+          <img src="<%= g.image %>" alt="<%= g.caption || '' %>" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+          <% if (g.caption) { %><span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent text-white text-xs sm:text-sm p-3 pt-8 opacity-0 group-hover:opacity-100 transition"><%= g.caption %></span><% } %>
+        </a>
+      <% }) %>
+    </div>
+    <% } else { %><p class="text-gray-500">Add photos from the admin panel.</p><% } %>
+  </div>
+</section>
+<% } %>

@@ -1,0 +1,75 @@
+<%
+  const g = site.general, t = site.theme, seo = site.seo;
+  const pageTitle = typeof title !== 'undefined' ? title : '';
+  const desc = (typeof description !== 'undefined' && description) ? description : (seo.description || g.tagline || '');
+  const ogImage = seo.ogImage || (site.hero.images[0] && site.hero.images[0].url) || '';
+  const absolute = (u) => (u && !/^https?:/i.test(u) && siteUrl) ? siteUrl + u : u;
+  const fontsHref = h.fontsHref(t);
+  const radius = t.buttonStyle === 'pill' ? '9999px' : (t.buttonStyle === 'none' ? '0px' : '0.5rem');
+%><!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= h.siteTitle(site, pageTitle) %></title>
+  <meta name="description" content="<%= desc %>">
+  <% if (siteUrl) { %><link rel="canonical" href="<%= siteUrl + (path === '/' ? '/' : path) %>"><% } %>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= h.siteTitle(site, pageTitle) %>">
+  <meta property="og:description" content="<%= desc %>">
+  <% if (ogImage) { %><meta property="og:image" content="<%= absolute(ogImage) %>"><% } %>
+  <meta name="twitter:card" content="summary_large_image">
+  <% if (seo.favicon) { %><link rel="icon" href="<%= seo.favicon %>"><% } else { %><link rel="icon" href="/img/favicon.svg" type="image/svg+xml"><% } %>
+  <% if (fontsHref) { %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="<%= fontsHref %>">
+  <% } %>
+  <script src="/vendor/tailwind-3.4.17.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: 'rgb(var(--brand) / <alpha-value>)', dark: 'rgb(var(--brand-dark) / <alpha-value>)', light: 'rgb(var(--brand-light) / <alpha-value>)' },
+            accent: { DEFAULT: 'rgb(var(--accent) / <alpha-value>)', dark: 'rgb(var(--accent-dark) / <alpha-value>)' },
+            sand: '#f6f2ec',
+          },
+          fontFamily: {
+            heading: [<%- JSON.stringify(t.headingFont || 'Playfair Display') %>, 'Georgia', 'serif'],
+            body: [<%- JSON.stringify(t.bodyFont || 'Inter') %>, 'system-ui', 'sans-serif'],
+          },
+          maxWidth: { page: '80rem' },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --brand: <%= h.rgbTriplet(t.primary, '31 58 95') %>;
+      --brand-dark: <%= h.rgbTriplet(h.shade(t.primary, -0.25), '20 38 62') %>;
+      --brand-light: <%= h.rgbTriplet(h.shade(t.primary, 0.9), '235 240 246') %>;
+      --accent: <%= h.rgbTriplet(t.accent, '200 137 58') %>;
+      --accent-dark: <%= h.rgbTriplet(h.shade(t.accent, -0.2), '160 110 46') %>;
+      --btn-radius: <%= radius %>;
+      --hero-overlay: <%= Math.max(0, Math.min(95, Number(t.heroOverlay) || 0)) / 100 %>;
+    }
+  </style>
+  <link rel="stylesheet" href="/css/site.css?v=1">
+  <% if (t.customCss) { %><style id="custom-css"><%- t.customCss %></style><% } %>
+  <% if (seo.customHeadHtml) { %><%- seo.customHeadHtml %><% } %>
+  <script type="application/ld+json"><%- JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Hotel',
+    name: h.fullName(g),
+    description: desc,
+    telephone: g.phone || undefined,
+    email: g.email || undefined,
+    url: siteUrl || undefined,
+    image: ogImage ? absolute(ogImage) : undefined,
+    address: g.address && g.address.street ? { '@type': 'PostalAddress', streetAddress: g.address.street, addressLocality: g.address.city, addressRegion: g.address.state, postalCode: g.address.zip, addressCountry: g.address.country || 'US' } : undefined,
+    checkinTime: g.checkInTime || undefined,
+    checkoutTime: g.checkOutTime || undefined,
+  }) %></script>
+</head>
+<body class="font-body text-gray-800 bg-white antialiased">

@@ -1,0 +1,60 @@
+<%
+  const g = site.general;
+  const dark = site.theme.headerStyle === 'dark';
+  const nav = site.nav.filter((n) => n.enabled !== false && n.label && n.href);
+  const book = h.bookingHref(site);
+  const isActive = (href) => href === '/' ? path === '/' : path.startsWith(href);
+%>
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-white focus:px-4 focus:py-2 focus:text-brand">Skip to content</a>
+<% if (g.announcement && g.announcement.enabled && g.announcement.text) { %>
+<div class="bg-brand-dark text-white text-xs sm:text-sm">
+  <div class="max-w-page mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center">
+    <%- icon('sparkles', 'w-4 h-4 text-accent shrink-0') %>
+    <% if (g.announcement.href) { %><a href="<%= g.announcement.href %>" class="hover:underline"><%= g.announcement.text %></a><% } else { %><span><%= g.announcement.text %></span><% } %>
+  </div>
+</div>
+<% } %>
+<header id="site-header" class="sticky top-0 z-50 transition-shadow <%= dark ? 'bg-brand text-white' : 'bg-white/95 backdrop-blur text-gray-900 border-b border-gray-100' %>">
+  <div class="max-w-page mx-auto px-4">
+    <div class="flex items-center justify-between h-16 lg:h-20 gap-4">
+      <a href="/" class="flex items-center gap-3 min-w-0">
+        <% if (g.logoUrl) { %>
+          <img src="<%= g.logoUrl %>" alt="<%= h.fullName(g) %>" class="h-10 lg:h-12 w-auto object-contain">
+        <% } else { %>
+          <span class="inline-flex items-center justify-center w-10 h-10 rounded-md <%= dark ? 'bg-white/10 text-white' : 'bg-brand text-white' %>"><%- icon('building', 'w-5 h-5') %></span>
+        <% } %>
+        <span class="min-w-0">
+          <span class="block font-heading text-lg lg:text-xl leading-tight truncate"><%= g.logoText || g.hotelName %></span>
+          <% if (g.brandLine) { %><span class="block text-[11px] uppercase tracking-[0.18em] <%= dark ? 'text-white/70' : 'text-gray-500' %> truncate"><%= g.brandLine %></span><% } %>
+        </span>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-1" aria-label="Main">
+        <% nav.forEach((n) => { %>
+          <a href="<%= n.href %>" class="px-3 py-2 text-sm font-medium rounded-md transition whitespace-nowrap <%= isActive(n.href) ? (dark ? 'bg-white/15 text-white' : 'text-brand bg-brand-light') : (dark ? 'text-white/85 hover:bg-white/10' : 'text-gray-700 hover:text-brand hover:bg-gray-50') %>"><%= n.label %></a>
+        <% }) %>
+      </nav>
+
+      <div class="flex items-center gap-2 lg:gap-3">
+        <% if (g.phone) { %>
+          <a href="<%= h.telHref(g.phone) %>" class="hidden xl:inline-flex items-center gap-2 text-sm font-medium whitespace-nowrap <%= dark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-brand' %>">
+            <%- icon('phone', 'w-4 h-4') %><span><%= g.phone %></span>
+          </a>
+        <% } %>
+        <a href="<%= book %>" class="btn btn-accent text-sm px-4 py-2"><%= g.bookNowLabel || 'Check Rates' %></a>
+        <button type="button" class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-md <%= dark ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100' %>" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+          <%- icon('menu', 'w-6 h-6 icon-open') %><%- icon('x', 'w-6 h-6 icon-close hidden') %>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="mobile-nav" class="lg:hidden hidden border-t <%= dark ? 'border-white/10 bg-brand' : 'border-gray-100 bg-white' %>">
+    <nav class="max-w-page mx-auto px-4 py-3 flex flex-col" aria-label="Mobile">
+      <% nav.forEach((n) => { %>
+        <a href="<%= n.href %>" class="px-3 py-3 text-base font-medium rounded-md <%= isActive(n.href) ? (dark ? 'bg-white/15' : 'text-brand bg-brand-light') : (dark ? 'text-white/90' : 'text-gray-800') %>"><%= n.label %></a>
+      <% }) %>
+      <% if (g.phone) { %><a href="<%= h.telHref(g.phone) %>" class="px-3 py-3 text-base font-medium inline-flex items-center gap-2 <%= dark ? 'text-white/90' : 'text-gray-800' %>"><%- icon('phone', 'w-4 h-4') %><%= g.phone %></a><% } %>
+    </nav>
+  </div>
+</header>
+<main id="main">

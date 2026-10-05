@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin sign in · <%= site.general.hotelName %></title><link rel="icon" href="/img/favicon.svg"><link rel="stylesheet" href="/admin/admin.css?v=1"></head>
+<body class="login-body">
+<form method="post" action="/admin/login" class="login-card" autocomplete="off">
+  <div class="login-logo">🔒</div>
+  <h1>Site Admin</h1>
+  <p class="muted"><%= site.general.hotelName %> — enter the admin passphrase to manage the website.</p>
+  <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+  <label>Passphrase<input type="password" name="passphrase" required autofocus autocomplete="current-password"></label>
+  <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+  <a href="/" class="muted small">← Back to website</a>
+</form>
+</body></html>

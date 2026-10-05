@@ -1,0 +1,8 @@
+<%- include('partials/head', { description: site.amenities.intro }) %>
+<%- include('partials/header') %>
+<% const f0 = (site.amenities.featured || []).find((f) => f && f.image); %>
+<%- include('partials/page-hero', { eyebrow: 'Amenities', heading: site.amenities.heading || 'Amenities', intro: site.amenities.intro, image: f0 && f0.image }) %>
+<%- include('partials/section-amenities', { compact: false }) %>
+<%- include('partials/custom-sections', { position: 'page-amenities' }) %>
+<%- include('partials/section-contact-cta') %>
+<%- include('partials/footer') %>

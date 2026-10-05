@@ -1,0 +1,15 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<% const firstRoom = h.enabledItems(site.rooms.items)[0]; %>
+<%- include('partials/page-hero', { eyebrow: 'Accommodations', heading: site.rooms.heading || 'Suites & Rooms', intro: site.rooms.intro, image: firstRoom && firstRoom.image }) %>
+<section class="max-w-page mx-auto px-4 py-16 lg:py-20">
+  <% const rooms = h.enabledItems(site.rooms.items); %>
+  <% if (rooms.length) { %>
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <% rooms.forEach((room) => { %><%- include('partials/room-card', { room }) %><% }) %>
+  </div>
+  <% } else { %><p class="text-gray-500">No suites have been added yet.</p><% } %>
+</section>
+<%- include('partials/section-faq') %>
+<%- include('partials/section-contact-cta') %>
+<%- include('partials/footer') %>

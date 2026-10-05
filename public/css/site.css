@@ -1,0 +1,82 @@
+/* Small custom layer on top of Tailwind (CDN). Theme values come from CSS variables set in <head>. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border-radius: var(--btn-radius, 0.5rem);
+  transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: rgb(var(--brand)); color: #fff; }
+.btn-primary:hover { background: rgb(var(--brand-dark)); }
+.btn-accent { background: rgb(var(--accent)); color: #fff; }
+.btn-accent:hover { background: rgb(var(--accent-dark)); }
+.btn-outline { background: #fff; color: rgb(var(--brand)); box-shadow: inset 0 0 0 1.5px rgb(var(--brand) / 0.35); }
+.btn-outline:hover { box-shadow: inset 0 0 0 1.5px rgb(var(--brand)); background: rgb(var(--brand-light)); }
+.btn-ghost { background: rgb(255 255 255 / 0.12); color: #fff; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.5); backdrop-filter: blur(4px); }
+.btn-ghost:hover { background: rgb(255 255 255 / 0.22); }
+
+.field {
+  display: block;
+  width: 100%;
+  border: 1px solid #d6d3cf;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  color: #1f2937;
+  background: #fff;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.field:focus { outline: none; border-color: rgb(var(--brand)); box-shadow: 0 0 0 3px rgb(var(--brand) / 0.15); }
+.label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 0.3rem; }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--accent));
+  margin-bottom: 0.6rem;
+}
+.eyebrow::before { content: ""; width: 1.5rem; height: 2px; background: rgb(var(--accent)); border-radius: 2px; }
+
+.hero-overlay {
+  background: linear-gradient(to top, rgb(0 0 0 / calc(var(--hero-overlay) + 0.35)) 0%, rgb(0 0 0 / var(--hero-overlay)) 50%, rgb(0 0 0 / calc(var(--hero-overlay) * 0.5)) 100%);
+}
+
+.chip {
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: #fff;
+  color: #374151;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+  transition: all .15s ease;
+}
+.chip:hover { box-shadow: inset 0 0 0 1px rgb(var(--brand)); color: rgb(var(--brand)); }
+.chip.is-active { background: rgb(var(--brand)); color: #fff; box-shadow: none; }
+
+#site-header.is-scrolled { box-shadow: 0 6px 24px -12px rgb(0 0 0 / 0.25); }
+[data-filter-items] > .is-hidden { display: none; }
+#lightbox.is-open { display: flex; }
+
+details > summary::-webkit-details-marker { display: none; }
+
+.custom-section .prose h3 { font-family: inherit; font-size: 1.35rem; font-weight: 600; margin: 1.25rem 0 .5rem; }
+.custom-section .prose p { margin: .5rem 0 1rem; line-height: 1.7; color: #4b5563; }
+.custom-section .prose ul { list-style: disc; padding-left: 1.5rem; margin: .5rem 0 1rem; color: #4b5563; }
+.custom-section .prose a { color: rgb(var(--brand)); text-decoration: underline; }
+.custom-section .prose img { border-radius: 1rem; margin: 1rem 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide { transition: none !important; }
+}

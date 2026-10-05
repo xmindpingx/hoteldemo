@@ -1,0 +1,23 @@
+<%
+  const r = site.rooms;
+  const _limit = typeof limit !== 'undefined' ? limit : 0;
+  let rooms = h.enabledItems(r.items);
+  const total = rooms.length;
+  if (_limit && rooms.length > _limit) {
+    rooms = [...rooms].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)).slice(0, _limit);
+  }
+  if (r.enabled !== false && (rooms.length || r.heading)) {
+%>
+<section class="bg-sand py-16 lg:py-24" id="suites">
+  <div class="max-w-page mx-auto px-4">
+    <%- include('section-heading', { eyebrow: 'Accommodations', heading: r.heading || 'Suites & Rooms', intro: r.intro, link: _limit && total > _limit ? { href: '/suites', label: `View all ${total} suites` } : (_limit ? { href: '/suites', label: 'All suites & rates' } : null) }) %>
+    <% if (rooms.length) { %>
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <% rooms.forEach((room) => { %><%- include('room-card', { room }) %><% }) %>
+    </div>
+    <% } else { %>
+    <p class="text-gray-500">Suites will be listed here once they are added in the admin panel.</p>
+    <% } %>
+  </div>
+</section>
+<% } %>

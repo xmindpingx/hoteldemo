@@ -1,0 +1,25 @@
+{
+  "name": "hoteldemo",
+  "version": "1.0.0",
+  "description": "Extended-stay hotel demo website with a passphrase-protected admin CMS (JSON-backed).",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "reset:mock": "node -e \"require('./src/store').resetSite('mock'); console.log('site.json restored to mock data')\"",
+    "reset:blank": "node -e \"require('./src/store').resetSite('blank'); console.log('site.json wiped to blank template')\"",
+    "route:cloudflare": "node scripts/cloudflare-route.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "multer": "^2.0.1"
+  },
+  "license": "MIT"
+}

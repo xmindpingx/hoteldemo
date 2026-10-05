@@ -1,0 +1,1056 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "dataset": "upscale-demo",
+    "note": "Fictional upscale extended-stay sample content (Desert Sage Suites). Every photo, review, rate and description is placeholder."
+  },
+  "general": {
+    "hotelName": "Desert Sage Suites",
+    "locationLine": "Phoenix Mesa",
+    "brandLine": "Extended-Stay Suites",
+    "tagline": "Spacious suites with full kitchens, free hot breakfast and a heated outdoor pool in Mesa, Arizona.",
+    "logoUrl": "",
+    "logoText": "Desert Sage Suites",
+    "phone": "(480) 555-0123",
+    "email": "stay@desertsagesuites.example",
+    "address": {
+      "street": "1234 N Demo Way",
+      "city": "Mesa",
+      "state": "AZ",
+      "zip": "85201",
+      "country": "USA"
+    },
+    "checkInTime": "3:00 PM",
+    "checkOutTime": "12:00 PM",
+    "starRating": 4,
+    "reviewScore": 4.6,
+    "reviewCount": 312,
+    "showRating": true,
+    "bookingMode": "inquiry",
+    "bookingUrl": "",
+    "bookNowLabel": "Check Rates",
+    "currency": "USD",
+    "announcement": {
+      "enabled": true,
+      "text": "Free hot breakfast daily · Free parking · Pet friendly · Heated outdoor pool",
+      "href": ""
+    }
+  },
+  "theme": {
+    "primary": "#1f3a5f",
+    "accent": "#c8893a",
+    "headingFont": "Playfair Display",
+    "bodyFont": "Inter",
+    "headerStyle": "light",
+    "buttonStyle": "rounded",
+    "heroOverlay": 45,
+    "customCss": ""
+  },
+  "seo": {
+    "title": "",
+    "description": "Extended-stay suites in Mesa, Arizona with full kitchens, free hot breakfast, a heated outdoor pool and pet-friendly rooms. Demo site.",
+    "ogImage": "",
+    "favicon": "",
+    "customHeadHtml": ""
+  },
+  "nav": [
+    {
+      "label": "Overview",
+      "href": "/",
+      "enabled": true
+    },
+    {
+      "label": "Suites",
+      "href": "/suites",
+      "enabled": true
+    },
+    {
+      "label": "Amenities",
+      "href": "/amenities",
+      "enabled": true
+    },
+    {
+      "label": "Dining",
+      "href": "/dining",
+      "enabled": true
+    },
+    {
+      "label": "Local Area",
+      "href": "/area",
+      "enabled": true
+    },
+    {
+      "label": "Gallery",
+      "href": "/gallery",
+      "enabled": true
+    },
+    {
+      "label": "Contact",
+      "href": "/contact",
+      "enabled": true
+    }
+  ],
+  "layout": {
+    "homeOrder": [
+      "promotions",
+      "overview",
+      "rooms",
+      "amenities",
+      "dining",
+      "area",
+      "gallery",
+      "reviews",
+      "faq",
+      "contact"
+    ]
+  },
+  "hero": {
+    "enabled": true,
+    "badge": "Newly refreshed suites",
+    "heading": "",
+    "subheading": "Live like a local in the East Valley — every suite has a full kitchen, separate living space and room to spread out.",
+    "ctaText": "Check Rates",
+    "ctaHref": "",
+    "secondaryCtaText": "Explore Suites",
+    "secondaryCtaHref": "/suites",
+    "showBookingBar": true,
+    "slideInterval": 7,
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1800&q=70",
+        "alt": "Hotel courtyard with palm trees and pool at dusk"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=1800&q=70",
+        "alt": "Hotel exterior with outdoor pool"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1800&q=70",
+        "alt": "Outdoor pool lit at night"
+      }
+    ]
+  },
+  "promotions": {
+    "enabled": true,
+    "heading": "Offers & Packages",
+    "items": [
+      {
+        "id": "promo-extended",
+        "title": "Stay Longer, Save More",
+        "text": "Book five or more consecutive nights and receive a discounted extended-stay rate with weekly housekeeping included.",
+        "code": "STAY5",
+        "ctaText": "View Rates",
+        "ctaHref": "/contact",
+        "style": "accent",
+        "enabled": true
+      },
+      {
+        "id": "promo-spring",
+        "title": "Spring Training Getaway",
+        "text": "Cactus League season package: suite stay, late checkout on game days and a grocery-stocked kitchen on arrival.",
+        "code": "",
+        "ctaText": "Ask About Packages",
+        "ctaHref": "/contact",
+        "style": "dark",
+        "enabled": true
+      },
+      {
+        "id": "promo-pets",
+        "title": "Pets Stay Too",
+        "text": "Your four-legged travel companion is welcome. Ask about our pet policy and the walking area behind the sport court.",
+        "code": "",
+        "ctaText": "Pet Policy",
+        "ctaHref": "/amenities#pets",
+        "style": "light",
+        "enabled": true
+      }
+    ]
+  },
+  "overview": {
+    "enabled": true,
+    "heading": "Room to live, work and unwind",
+    "paragraphs": [
+      "Desert Sage Suites Phoenix Mesa is an all-suite, extended-stay hotel designed for travelers who need more than a room. Every suite features a fully equipped kitchen, a dedicated living area with a sofa and work space, and a bedroom that stays quiet behind its own door.",
+      "Start each morning with our complimentary hot breakfast, cool off in the heated outdoor pool, shoot hoops on the sport court, or fire up the courtyard grills in the evening. Pets are welcome, parking and Wi-Fi are free, and our grocery delivery service keeps your kitchen stocked while you're out.",
+      "Downtown Mesa, Cactus League spring training ballparks, Arizona State University and the Phoenix–Mesa Gateway and Sky Harbor airports are all part of the neighborhood we call home."
+    ],
+    "image": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=70",
+    "imageAlt": "Suite living area with open kitchen",
+    "highlights": [
+      {
+        "icon": "breakfast",
+        "label": "Free hot breakfast",
+        "note": "Served daily"
+      },
+      {
+        "icon": "pool",
+        "label": "Heated outdoor pool",
+        "note": "Open year-round"
+      },
+      {
+        "icon": "kitchen",
+        "label": "Full kitchens",
+        "note": "In every suite"
+      },
+      {
+        "icon": "pet",
+        "label": "Pet friendly",
+        "note": "Fee applies"
+      },
+      {
+        "icon": "court",
+        "label": "Sport court",
+        "note": "Basketball & pickleball"
+      },
+      {
+        "icon": "parking",
+        "label": "Free on-site parking",
+        "note": "Including oversized vehicles"
+      },
+      {
+        "icon": "wifi",
+        "label": "Free high-speed Wi-Fi",
+        "note": "Throughout the hotel"
+      },
+      {
+        "icon": "grill",
+        "label": "Courtyard grills",
+        "note": "Evening cookouts"
+      }
+    ],
+    "stats": [
+      {
+        "value": "132",
+        "label": "Suites"
+      },
+      {
+        "value": "100%",
+        "label": "Full kitchens"
+      },
+      {
+        "value": "4",
+        "label": "Suite layouts"
+      },
+      {
+        "value": "24/7",
+        "label": "Front desk & market"
+      }
+    ]
+  },
+  "rooms": {
+    "enabled": true,
+    "heading": "Suites & Rooms",
+    "intro": "Every suite comes with a full kitchen, separate living and sleeping areas, free Wi-Fi and plenty of natural light. Choose the layout that fits your stay.",
+    "items": [
+      {
+        "id": "room-studio-king",
+        "slug": "studio-suite-king",
+        "name": "Studio Suite, 1 King",
+        "type": "Studio",
+        "image": "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1400&q=70",
+        "images": [
+          "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1400&q=70"
+        ],
+        "sqft": 420,
+        "beds": "1 King",
+        "sleeps": 2,
+        "bathrooms": 1,
+        "view": "Courtyard or pool view",
+        "shortDescription": "An open-plan suite with a king bed, full kitchen and a comfortable work-and-lounge area.",
+        "description": "Our most popular layout for solo travelers and couples. The studio pairs a plush king bed with a full kitchen, a dining counter for two and a sofa lounge beneath the window. Blackout drapes, a large desk with outlets and a 55-inch smart TV make it as easy to work as it is to relax.",
+        "features": [
+          "Full kitchen with dishwasher, stovetop & full-size refrigerator",
+          "55\" smart TV",
+          "Work desk with ergonomic chair",
+          "Sofa lounge area",
+          "Walk-in shower",
+          "In-suite safe",
+          "Complimentary high-speed Wi-Fi"
+        ],
+        "priceFrom": 149,
+        "priceNote": "per night, before taxes",
+        "featured": true,
+        "enabled": true,
+        "bookHref": ""
+      },
+      {
+        "id": "room-studio-queens",
+        "slug": "studio-suite-two-queens",
+        "name": "Studio Suite, 2 Queens",
+        "type": "Studio",
+        "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1400&q=70",
+        "images": [
+          "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=1400&q=70"
+        ],
+        "sqft": 480,
+        "beds": "2 Queens",
+        "sleeps": 4,
+        "bathrooms": 1,
+        "view": "Courtyard view",
+        "shortDescription": "Two queen beds, a full kitchen and a lounge nook — ideal for friends, teammates or a small family.",
+        "description": "Designed for groups that want to share one suite without giving up space. Two queen beds sit opposite a full kitchen and dining area, with a sofa and smart TV between them. Great for spring-training trips, youth-sports weekends and relocating families.",
+        "features": [
+          "Full kitchen with dishwasher & microwave",
+          "Dining table for four",
+          "55\" smart TV",
+          "Sofa lounge",
+          "Tub/shower combination",
+          "Iron, ironing board & hair dryer",
+          "Complimentary high-speed Wi-Fi"
+        ],
+        "priceFrom": 169,
+        "priceNote": "per night, before taxes",
+        "featured": true,
+        "enabled": true,
+        "bookHref": ""
+      },
+      {
+        "id": "room-one-bedroom",
+        "slug": "one-bedroom-suite",
+        "name": "One-Bedroom Suite, 1 King",
+        "type": "One Bedroom",
+        "image": "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1400&q=70",
+        "images": [
+          "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1400&q=70"
+        ],
+        "sqft": 560,
+        "beds": "1 King + sofa bed",
+        "sleeps": 4,
+        "bathrooms": 1,
+        "view": "Pool or mountain view",
+        "shortDescription": "A private bedroom plus a separate living room with sofa bed, dining area and full kitchen.",
+        "description": "Close the bedroom door and the living room becomes an office, a playroom or a second bedroom. The one-bedroom suite includes a king bed, a queen sofa bed, two smart TVs, a dining table and a full kitchen — the right fit for longer stays and traveling families.",
+        "features": [
+          "Separate bedroom with king bed",
+          "Living room with queen sofa bed",
+          "Two 55\" smart TVs",
+          "Full kitchen with dishwasher",
+          "Dining table for four",
+          "Walk-in shower",
+          "Complimentary high-speed Wi-Fi"
+        ],
+        "priceFrom": 189,
+        "priceNote": "per night, before taxes",
+        "featured": true,
+        "enabled": true,
+        "bookHref": ""
+      },
+      {
+        "id": "room-two-bedroom",
+        "slug": "two-bedroom-suite",
+        "name": "Two-Bedroom Suite, 2 Kings",
+        "type": "Two Bedroom",
+        "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1400&q=70",
+        "images": [
+          "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1585821569331-f071db2abd8d?auto=format&fit=crop&w=1400&q=70"
+        ],
+        "sqft": 820,
+        "beds": "2 Kings + sofa bed",
+        "sleeps": 6,
+        "bathrooms": 2,
+        "view": "Pool view",
+        "shortDescription": "Two private bedrooms, two bathrooms and a shared living room and kitchen — our largest suite.",
+        "description": "Our two-bedroom suite gives everyone their own space: two bedrooms, each with a king bed and private bathroom, open onto a shared living room, dining area and full kitchen. Perfect for families, colleagues sharing an assignment, or an extended stay with visitors.",
+        "features": [
+          "Two private bedrooms, each with a king bed",
+          "Two full bathrooms",
+          "Living room with queen sofa bed",
+          "Three smart TVs",
+          "Full kitchen with dishwasher",
+          "Dining table for six",
+          "Complimentary high-speed Wi-Fi"
+        ],
+        "priceFrom": 259,
+        "priceNote": "per night, before taxes",
+        "featured": false,
+        "enabled": true,
+        "bookHref": ""
+      },
+      {
+        "id": "room-accessible",
+        "slug": "accessible-studio-suite",
+        "name": "Accessible Studio Suite, 1 King",
+        "type": "Studio · Accessible",
+        "image": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1400&q=70",
+        "images": [
+          "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1400&q=70",
+          "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1400&q=70"
+        ],
+        "sqft": 440,
+        "beds": "1 King",
+        "sleeps": 2,
+        "bathrooms": 1,
+        "view": "Courtyard view",
+        "shortDescription": "Mobility-accessible studio with a roll-in shower, lowered counters and wider doorways.",
+        "description": "This studio suite is designed for mobility accessibility, with a roll-in shower with grab bars and a fold-down bench, lowered kitchen counters, accessible-height bed and wider doorways. Visual and audible alarm kits are available on request.",
+        "features": [
+          "Roll-in shower with grab bars",
+          "Lowered counters & accessible kitchen",
+          "Wider doorways & turning space",
+          "Visual alarm kit on request",
+          "Full kitchen",
+          "55\" smart TV",
+          "Complimentary high-speed Wi-Fi"
+        ],
+        "priceFrom": 149,
+        "priceNote": "per night, before taxes",
+        "featured": false,
+        "enabled": true,
+        "bookHref": ""
+      }
+    ]
+  },
+  "amenities": {
+    "enabled": true,
+    "heading": "Hotel Amenities",
+    "intro": "Everything you need for a night, a week or a season — included with your stay unless noted.",
+    "featured": [
+      {
+        "id": "feat-pool",
+        "icon": "pool",
+        "title": "Heated Outdoor Pool",
+        "text": "Swim year-round in our heated courtyard pool, surrounded by loungers, shade sails and a sun deck.",
+        "image": "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=1400&q=70"
+      },
+      {
+        "id": "feat-breakfast",
+        "icon": "breakfast",
+        "title": "Free Hot Breakfast",
+        "text": "Eggs, breakfast meats, waffles, fresh fruit, yogurt and coffee served every morning in the breakfast room.",
+        "image": "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=1400&q=70"
+      },
+      {
+        "id": "feat-court",
+        "icon": "court",
+        "title": "Sport Court",
+        "text": "Lit outdoor court for basketball and pickleball. Equipment is available at the front desk.",
+        "image": "https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=1400&q=70"
+      },
+      {
+        "id": "feat-fitness",
+        "icon": "gym",
+        "title": "24-Hour Fitness Center",
+        "text": "Cardio machines, free weights and stretching space, open around the clock.",
+        "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1400&q=70"
+      },
+      {
+        "id": "feat-pets",
+        "icon": "pet",
+        "title": "Pet Friendly",
+        "text": "Dogs and cats are welcome for a non-refundable pet fee. A pet-relief area sits just past the sport court.",
+        "image": "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=1400&q=70"
+      },
+      {
+        "id": "feat-laundry",
+        "icon": "laundry",
+        "title": "Guest Laundry",
+        "text": "Washers and dryers on site, plus same-day dry cleaning drop-off Monday through Friday.",
+        "image": "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&w=1400&q=70"
+      }
+    ],
+    "categories": [
+      {
+        "id": "cat-hotel",
+        "name": "Hotel Highlights",
+        "items": [
+          "Free hot breakfast daily",
+          "Heated outdoor pool",
+          "Lit sport court",
+          "24-hour fitness center",
+          "Free on-site parking",
+          "Free high-speed Wi-Fi",
+          "Courtyard grills & fire pit",
+          "24-hour market & grab-and-go",
+          "Grocery delivery service",
+          "Pet friendly (fee applies)"
+        ]
+      },
+      {
+        "id": "cat-suite",
+        "name": "In Every Suite",
+        "items": [
+          "Full kitchen with full-size refrigerator, stovetop, microwave & dishwasher",
+          "Cookware, dishes & utensils",
+          "Separate living & sleeping areas",
+          "Work desk with ergonomic chair",
+          "Smart TV with streaming",
+          "Coffee maker",
+          "Iron & ironing board",
+          "Hair dryer",
+          "In-suite safe",
+          "Blackout drapes"
+        ]
+      },
+      {
+        "id": "cat-business",
+        "name": "Business & Meetings",
+        "items": [
+          "Business center with printing",
+          "Meeting room for up to 24 guests",
+          "Complimentary Wi-Fi throughout",
+          "Package receiving at the front desk",
+          "Corporate & extended-stay rates"
+        ]
+      },
+      {
+        "id": "cat-services",
+        "name": "Services",
+        "items": [
+          "24-hour front desk",
+          "Daily housekeeping (weekly for extended stays)",
+          "Luggage storage",
+          "Dry cleaning drop-off",
+          "Wake-up calls",
+          "Cribs & rollaway beds on request",
+          "Accessible suites & facilities",
+          "Smoke-free property"
+        ]
+      }
+    ],
+    "policies": [
+      {
+        "id": "pol-pets",
+        "anchor": "pets",
+        "title": "Pet Policy",
+        "text": "Dogs and cats are welcome. A non-refundable pet fee applies per stay; please contact the hotel for the current fee and any weight limits. Pets must be leashed in public areas and may not be left unattended in suites."
+      },
+      {
+        "id": "pol-parking",
+        "anchor": "parking",
+        "title": "Parking",
+        "text": "Complimentary self-parking for registered guests, including space for oversized vehicles and trailers. Electric-vehicle charging is available on a first-come basis."
+      },
+      {
+        "id": "pol-smoking",
+        "anchor": "smoking",
+        "title": "Smoke-Free",
+        "text": "The entire property, including suites, balconies and the pool deck, is smoke-free. A cleaning fee applies to any violation."
+      }
+    ]
+  },
+  "dining": {
+    "enabled": true,
+    "heading": "Dining",
+    "intro": "Start the day with a hot breakfast, stock your kitchen with our grocery service and join us for evening socials in the courtyard.",
+    "items": [
+      {
+        "id": "dine-breakfast",
+        "name": "Complimentary Hot Breakfast",
+        "badge": "Included",
+        "hours": "Mon–Fri 6:30–9:30 AM · Sat–Sun 7:00–10:00 AM",
+        "description": "A rotating hot buffet with scrambled eggs, breakfast meats, waffles, oatmeal, fresh fruit, yogurt, pastries, juices and fresh-brewed coffee. Gluten-free and plant-based options are available daily.",
+        "image": "https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&w=1400&q=70",
+        "enabled": true
+      },
+      {
+        "id": "dine-social",
+        "name": "Evening Courtyard Social",
+        "badge": "Complimentary",
+        "hours": "Mon–Wed 5:30–7:00 PM",
+        "description": "Light bites, salads and local craft beverages served poolside three evenings a week. Fire up the grills, meet fellow guests and let the kids run on the sport court.",
+        "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1400&q=70",
+        "enabled": true
+      },
+      {
+        "id": "dine-market",
+        "name": "The Market",
+        "badge": "Open 24 hours",
+        "hours": "Open 24 hours",
+        "description": "Grab-and-go meals, snacks, frozen entrées, beverages and pantry basics next to the front desk, around the clock.",
+        "image": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1400&q=70",
+        "enabled": true
+      },
+      {
+        "id": "dine-grocery",
+        "name": "Grocery Delivery Service",
+        "badge": "Complimentary service",
+        "hours": "Order by 10 AM for same-day delivery, Mon–Sat",
+        "description": "Hand your shopping list to the front desk and we'll have your groceries delivered to your suite while you're out. You pay only for the groceries.",
+        "image": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1400&q=70",
+        "enabled": true
+      }
+    ],
+    "nearby": []
+  },
+  "area": {
+    "enabled": true,
+    "heading": "Explore Mesa & the East Valley",
+    "intro": "Spring-training ballparks, desert trails, downtown arts and two airports are all close by. Distances are left blank in this demo so you can enter accurate ones for your property.",
+    "mapQuery": "Mesa, AZ",
+    "mapEmbedUrl": "",
+    "categories": [
+      "Sports & Recreation",
+      "Arts & Culture",
+      "Outdoors",
+      "Shopping & Dining",
+      "Family",
+      "Golf",
+      "Education"
+    ],
+    "attractions": [
+      {
+        "id": "att-sloan",
+        "name": "Sloan Park",
+        "category": "Sports & Recreation",
+        "description": "Spring-training home of the Chicago Cubs, hosting Cactus League games each February and March.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-artscenter",
+        "name": "Mesa Arts Center",
+        "category": "Arts & Culture",
+        "description": "Downtown Mesa's performing- and visual-arts complex with theaters, galleries and working studios.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-naturalhistory",
+        "name": "Arizona Museum of Natural History",
+        "category": "Family",
+        "description": "Mesa's natural-history museum, known for its dinosaur exhibits and Southwest archaeology collections.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-idea",
+        "name": "i.d.e.a. Museum",
+        "category": "Family",
+        "description": "A hands-on children's museum in downtown Mesa centered on art, imagination and creative play.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-usery",
+        "name": "Usery Mountain Regional Park",
+        "category": "Outdoors",
+        "description": "Maricopa County park at the edge of the Tonto National Forest with hiking and mountain-biking trails, including the Wind Cave Trail.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-lostdutchman",
+        "name": "Lost Dutchman State Park",
+        "category": "Outdoors",
+        "description": "State park at the base of the Superstition Mountains in Apache Junction, with trails and sweeping desert views.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-saguarolake",
+        "name": "Saguaro Lake",
+        "category": "Outdoors",
+        "description": "Reservoir on the Salt River in the Tonto National Forest, popular for boating, fishing and kayaking.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-downtown",
+        "name": "Downtown Mesa",
+        "category": "Shopping & Dining",
+        "description": "Main Street's restaurants, shops, public art and the Valley Metro light-rail line.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-riverview",
+        "name": "Mesa Riverview",
+        "category": "Shopping & Dining",
+        "description": "Open-air shopping and dining center next to Sloan Park and Riverview Park.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-superstitionsprings",
+        "name": "Superstition Springs Center",
+        "category": "Shopping & Dining",
+        "description": "Enclosed shopping mall in east Mesa with department stores and dining.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-golfland",
+        "name": "Golfland Sunsplash",
+        "category": "Family",
+        "description": "Water park, miniature golf and arcade in Mesa — a summer favorite for families.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-caf",
+        "name": "Arizona Commemorative Air Force Museum",
+        "category": "Arts & Culture",
+        "description": "Aviation museum at Falcon Field with a collection of historic military aircraft.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-longbow",
+        "name": "Longbow Golf Club",
+        "category": "Golf",
+        "description": "Public golf course in Mesa.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-lassendas",
+        "name": "Las Sendas Golf Club",
+        "category": "Golf",
+        "description": "Golf course in northeast Mesa with Sonoran Desert and mountain views.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-asu",
+        "name": "Arizona State University",
+        "category": "Education",
+        "description": "ASU's Polytechnic campus is in Mesa, and the main Tempe campus and Mill Avenue district are in neighboring Tempe.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-roadtrip",
+        "name": "Arizona Day Trips",
+        "category": "Outdoors",
+        "description": "The Apache Trail, Tonto National Forest and the Sonoran Desert are all within reach for a day on the road.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      }
+    ],
+    "airports": [
+      {
+        "id": "apt-aza",
+        "name": "Phoenix–Mesa Gateway Airport",
+        "code": "AZA",
+        "distance": "",
+        "note": "Mesa's commercial airport, served by several low-cost carriers."
+      },
+      {
+        "id": "apt-phx",
+        "name": "Phoenix Sky Harbor International Airport",
+        "code": "PHX",
+        "distance": "",
+        "note": "The Phoenix metro's main international airport."
+      }
+    ],
+    "transport": [
+      {
+        "id": "tr-lightrail",
+        "name": "Valley Metro Light Rail",
+        "note": "Serves downtown Mesa along Main Street, continuing to Tempe and Phoenix."
+      },
+      {
+        "id": "tr-parking",
+        "name": "Free on-site parking",
+        "note": "Complimentary self-parking, including oversized vehicles."
+      }
+    ]
+  },
+  "gallery": {
+    "enabled": true,
+    "heading": "Gallery",
+    "intro": "A look around the property. Replace these sample photos with your own from the admin panel.",
+    "items": [
+      {
+        "id": "g1",
+        "image": "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Courtyard & pool at dusk",
+        "category": "Exterior"
+      },
+      {
+        "id": "g2",
+        "image": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Heated outdoor pool",
+        "category": "Pool"
+      },
+      {
+        "id": "g3",
+        "image": "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Studio Suite, 1 King",
+        "category": "Suites"
+      },
+      {
+        "id": "g4",
+        "image": "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1400&q=70",
+        "caption": "One-Bedroom Suite",
+        "category": "Suites"
+      },
+      {
+        "id": "g5",
+        "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Full kitchen in every suite",
+        "category": "Suites"
+      },
+      {
+        "id": "g6",
+        "image": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Suite living area",
+        "category": "Suites"
+      },
+      {
+        "id": "g7",
+        "image": "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Complimentary hot breakfast",
+        "category": "Dining"
+      },
+      {
+        "id": "g8",
+        "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Evening courtyard social",
+        "category": "Dining"
+      },
+      {
+        "id": "g9",
+        "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1400&q=70",
+        "caption": "24-hour fitness center",
+        "category": "Amenities"
+      },
+      {
+        "id": "g10",
+        "image": "https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Sport court",
+        "category": "Amenities"
+      },
+      {
+        "id": "g11",
+        "image": "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Pets welcome",
+        "category": "Amenities"
+      },
+      {
+        "id": "g12",
+        "image": "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Pool deck at sunset",
+        "category": "Pool"
+      },
+      {
+        "id": "g13",
+        "image": "https://images.unsplash.com/photo-1604014237800-1c9102c219da?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Courtyard lounge & grills",
+        "category": "Exterior"
+      },
+      {
+        "id": "g14",
+        "image": "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Meeting room",
+        "category": "Amenities"
+      },
+      {
+        "id": "g15",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Desert trails nearby",
+        "category": "Local Area"
+      },
+      {
+        "id": "g16",
+        "image": "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=1400&q=70",
+        "caption": "Spring-training baseball",
+        "category": "Local Area"
+      }
+    ]
+  },
+  "reviews": {
+    "enabled": true,
+    "heading": "What Guests Are Saying",
+    "intro": "Sample reviews for demo purposes — replace them with real guest feedback from the admin panel.",
+    "items": [
+      {
+        "id": "rev-1",
+        "name": "Maria G.",
+        "location": "Denver, CO",
+        "rating": 5,
+        "date": "March 2026",
+        "title": "Perfect for spring training",
+        "text": "We stayed ten nights for Cactus League games. The one-bedroom suite had everything — a real kitchen, a quiet bedroom and a sofa for the kids. Breakfast was hot and fast every morning.",
+        "enabled": true
+      },
+      {
+        "id": "rev-2",
+        "name": "Devin R.",
+        "location": "Seattle, WA",
+        "rating": 5,
+        "date": "February 2026",
+        "title": "Six-week work assignment, zero complaints",
+        "text": "The desk setup and Wi-Fi made working from the suite easy, and the grocery delivery service meant I never had to leave after a long day. Pool was warm even in February.",
+        "enabled": true
+      },
+      {
+        "id": "rev-3",
+        "name": "The Patel Family",
+        "location": "Chicago, IL",
+        "rating": 4,
+        "date": "January 2026",
+        "title": "Great space for a family of five",
+        "text": "Two-bedroom suite was huge. Kids loved the sport court and the evening social. Only wish the pool deck had a few more loungers on busy weekends.",
+        "enabled": true
+      },
+      {
+        "id": "rev-4",
+        "name": "Lauren K.",
+        "location": "Tucson, AZ",
+        "rating": 5,
+        "date": "December 2025",
+        "title": "Dog-friendly and actually meant it",
+        "text": "Staff greeted our lab by name on day two. The relief area is handy and there are good walking routes nearby. Clean, quiet and the kitchen was fully stocked with cookware.",
+        "enabled": true
+      },
+      {
+        "id": "rev-5",
+        "name": "Carlos M.",
+        "location": "San Diego, CA",
+        "rating": 4,
+        "date": "November 2025",
+        "title": "Solid extended-stay option in Mesa",
+        "text": "Stayed three weeks while relocating. Weekly housekeeping, laundry on site and free parking for my trailer. Breakfast gets busy around 8 but the staff keep it stocked.",
+        "enabled": true
+      },
+      {
+        "id": "rev-6",
+        "name": "Jenna & Tom",
+        "location": "Minneapolis, MN",
+        "rating": 5,
+        "date": "October 2025",
+        "title": "Our winter escape",
+        "text": "Spent a month here escaping the snow. Heated pool every morning, grills every evening, and the Superstition Mountains for weekend hikes. Already booked next year.",
+        "enabled": true
+      }
+    ]
+  },
+  "faq": {
+    "enabled": true,
+    "heading": "Good to Know",
+    "items": [
+      {
+        "id": "faq-checkin",
+        "q": "What are check-in and check-out times?",
+        "a": "Check-in begins at 3:00 PM and check-out is at 12:00 PM. Early check-in and late check-out are available on request, subject to availability."
+      },
+      {
+        "id": "faq-breakfast",
+        "q": "Is breakfast included?",
+        "a": "Yes. A complimentary hot breakfast is served every morning in the breakfast room: Monday–Friday 6:30–9:30 AM and Saturday–Sunday 7:00–10:00 AM."
+      },
+      {
+        "id": "faq-pets",
+        "q": "Are pets allowed?",
+        "a": "Dogs and cats are welcome for a non-refundable pet fee per stay. Please contact the hotel for the current fee and any size limits."
+      },
+      {
+        "id": "faq-parking",
+        "q": "Is parking available?",
+        "a": "Self-parking is free for registered guests, with space for oversized vehicles and trailers."
+      },
+      {
+        "id": "faq-kitchen",
+        "q": "Do all suites have kitchens?",
+        "a": "Every suite has a full kitchen with a full-size refrigerator, stovetop, microwave, dishwasher, cookware, dishes and utensils."
+      },
+      {
+        "id": "faq-extended",
+        "q": "Do you offer extended-stay rates?",
+        "a": "Yes. Discounted rates apply to stays of five nights or more, and monthly rates are available. Contact us for a quote."
+      },
+      {
+        "id": "faq-smoking",
+        "q": "Is the hotel smoke-free?",
+        "a": "Yes. The entire property, including suites, balconies and the pool deck, is smoke-free."
+      }
+    ]
+  },
+  "contact": {
+    "enabled": true,
+    "heading": "Contact & Booking Inquiry",
+    "intro": "Tell us when you'd like to stay and we'll reply with availability and rates. For same-day reservations, please call the front desk.",
+    "formEnabled": true,
+    "successMessage": "Thank you — we've received your inquiry and will reply by email shortly.",
+    "hours": "Front desk open 24 hours",
+    "showMap": true
+  },
+  "customSections": [],
+  "footer": {
+    "about": "Desert Sage Suites Phoenix Mesa is an all-suite extended-stay hotel in Mesa, Arizona. This website is a demo: every photo, review, rate and description is placeholder content managed from the admin panel.",
+    "links": [
+      {
+        "label": "Suites & Rooms",
+        "href": "/suites"
+      },
+      {
+        "label": "Amenities",
+        "href": "/amenities"
+      },
+      {
+        "label": "Dining",
+        "href": "/dining"
+      },
+      {
+        "label": "Local Area",
+        "href": "/area"
+      },
+      {
+        "label": "Gallery",
+        "href": "/gallery"
+      },
+      {
+        "label": "Contact",
+        "href": "/contact"
+      }
+    ],
+    "social": [
+      {
+        "network": "facebook",
+        "url": "#"
+      },
+      {
+        "network": "instagram",
+        "url": "#"
+      },
+      {
+        "network": "x",
+        "url": "#"
+      }
+    ],
+    "copyright": "© {year} Desert Sage Suites. All rights reserved.",
+    "bottomNote": "Demo website · Not affiliated with any hotel brand.",
+    "showAdminLink": true
+  }
+}

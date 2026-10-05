@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "dataset": "blank",
+    "note": "Blank template: structure only, with neutral placeholders and no sample items."
+  },
+  "general": {
+    "hotelName": "Your Hotel Name",
+    "locationLine": "",
+    "brandLine": "",
+    "tagline": "",
+    "logoUrl": "",
+    "logoText": "",
+    "phone": "",
+    "email": "",
+    "address": { "street": "", "city": "", "state": "", "zip": "", "country": "" },
+    "checkInTime": "",
+    "checkOutTime": "",
+    "starRating": 0,
+    "reviewScore": 0,
+    "reviewCount": 0,
+    "showRating": false,
+    "bookingMode": "inquiry",
+    "bookingUrl": "",
+    "bookNowLabel": "Check Availability",
+    "currency": "USD",
+    "announcement": { "enabled": false, "text": "", "href": "" }
+  },
+  "theme": {
+    "primary": "#1f3a5f",
+    "accent": "#c8893a",
+    "headingFont": "Playfair Display",
+    "bodyFont": "Inter",
+    "headerStyle": "light",
+    "buttonStyle": "rounded",
+    "heroOverlay": 45,
+    "customCss": ""
+  },
+  "seo": { "title": "", "description": "", "ogImage": "", "favicon": "", "customHeadHtml": "" },
+  "nav": [
+    { "label": "Overview", "href": "/", "enabled": true },
+    { "label": "Suites", "href": "/suites", "enabled": true },
+    { "label": "Amenities", "href": "/amenities", "enabled": true },
+    { "label": "Dining", "href": "/dining", "enabled": true },
+    { "label": "Local Area", "href": "/area", "enabled": true },
+    { "label": "Gallery", "href": "/gallery", "enabled": true },
+    { "label": "Contact", "href": "/contact", "enabled": true }
+  ],
+  "layout": {
+    "homeOrder": ["promotions", "overview", "rooms", "amenities", "dining", "area", "gallery", "reviews", "faq", "contact"]
+  },
+  "hero": {
+    "enabled": true,
+    "badge": "",
+    "heading": "",
+    "subheading": "",
+    "ctaText": "Check Availability",
+    "ctaHref": "",
+    "secondaryCtaText": "",
+    "secondaryCtaHref": "",
+    "showBookingBar": true,
+    "slideInterval": 7,
+    "images": []
+  },
+  "promotions": { "enabled": true, "heading": "Offers & Packages", "items": [] },
+  "overview": {
+    "enabled": true,
+    "heading": "Welcome",
+    "paragraphs": [],
+    "image": "",
+    "imageAlt": "",
+    "highlights": [],
+    "stats": []
+  },
+  "rooms": { "enabled": true, "heading": "Suites & Rooms", "intro": "", "items": [] },
+  "amenities": { "enabled": true, "heading": "Amenities", "intro": "", "featured": [], "categories": [], "policies": [] },
+  "dining": { "enabled": true, "heading": "Dining", "intro": "", "items": [], "nearby": [] },
+  "area": {
+    "enabled": true,
+    "heading": "Local Area",
+    "intro": "",
+    "mapQuery": "",
+    "mapEmbedUrl": "",
+    "latitude": 0,
+    "longitude": 0,
+    "categories": ["Shopping & Dining", "Arts & Culture", "Family", "Sports & Recreation", "Outdoors", "Golf", "Education"],
+    "attractions": [],
+    "airports": [],
+    "transport": []
+  },
+  "gallery": { "enabled": true, "heading": "Gallery", "intro": "", "items": [] },
+  "reviews": { "enabled": false, "heading": "Guest Reviews", "intro": "", "items": [] },
+  "faq": { "enabled": true, "heading": "Good to Know", "items": [] },
+  "contact": {
+    "enabled": true,
+    "heading": "Contact",
+    "intro": "",
+    "formEnabled": true,
+    "successMessage": "Thank you — we've received your inquiry and will reply shortly.",
+    "hours": "",
+    "showMap": true
+  },
+  "customSections": [],
+  "footer": {
+    "about": "",
+    "links": [],
+    "social": [],
+    "copyright": "© {year} Your Hotel Name. All rights reserved.",
+    "bottomNote": "",
+    "showAdminLink": true
+  }
+}

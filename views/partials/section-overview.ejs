@@ -1,0 +1,47 @@
+<%
+  const o = site.overview;
+  const paras = (o.paragraphs || []).filter(Boolean);
+  const highlights = (o.highlights || []).filter((x) => x && x.label);
+  const stats = (o.stats || []).filter((x) => x && x.value);
+  if (o.enabled !== false && (paras.length || highlights.length || o.heading)) {
+%>
+<section class="max-w-page mx-auto px-4 py-16 lg:py-24" id="overview">
+  <div class="grid gap-12 lg:grid-cols-12 lg:gap-16 items-start">
+    <div class="lg:col-span-7">
+      <div class="eyebrow">Overview</div>
+      <h2 class="font-heading text-3xl lg:text-4xl text-gray-900 leading-tight"><%= o.heading %></h2>
+      <div class="mt-6 space-y-4 text-gray-600 leading-relaxed text-[17px]">
+        <% paras.forEach((p) => { %><p><%- h.nl2br(p) %></p><% }) %>
+      </div>
+      <% if (highlights.length) { %>
+      <ul class="mt-8 grid sm:grid-cols-2 gap-x-6 gap-y-4">
+        <% highlights.forEach((x) => { %>
+          <li class="flex items-start gap-3">
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-brand-light text-brand shrink-0"><%- icon(x.icon || 'check', 'w-5 h-5') %></span>
+            <span><span class="block font-semibold text-gray-900"><%= x.label %></span><% if (x.note) { %><span class="block text-sm text-gray-500"><%= x.note %></span><% } %></span>
+          </li>
+        <% }) %>
+      </ul>
+      <% } %>
+    </div>
+    <div class="lg:col-span-5">
+      <% if (o.image) { %>
+      <div class="relative">
+        <img src="<%= o.image %>" alt="<%= o.imageAlt || '' %>" class="w-full aspect-[4/5] object-cover rounded-2xl shadow-lg" loading="lazy">
+        <div class="absolute -bottom-6 -left-6 hidden sm:block w-32 h-32 rounded-2xl bg-accent/20 -z-10"></div>
+      </div>
+      <% } %>
+      <% if (stats.length) { %>
+      <dl class="mt-10 grid grid-cols-2 gap-4">
+        <% stats.forEach((s) => { %>
+          <div class="rounded-xl bg-sand p-5">
+            <dd class="font-heading text-3xl text-brand"><%= s.value %></dd>
+            <dt class="text-sm text-gray-600 mt-1"><%= s.label %></dt>
+          </div>
+        <% }) %>
+      </dl>
+      <% } %>
+    </div>
+  </div>
+</section>
+<% } %>

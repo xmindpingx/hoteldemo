@@ -1,0 +1,8 @@
+<%- include('partials/head', { description: site.gallery.intro }) %>
+<%- include('partials/header') %>
+<% const g0 = (site.gallery.items || []).find((g) => g && g.image); %>
+<%- include('partials/page-hero', { eyebrow: 'Gallery', heading: site.gallery.heading || 'Gallery', intro: site.gallery.intro, image: g0 && g0.image }) %>
+<%- include('partials/section-gallery', { compact: false }) %>
+<%- include('partials/custom-sections', { position: 'page-gallery' }) %>
+<%- include('partials/section-contact-cta') %>
+<%- include('partials/footer') %>

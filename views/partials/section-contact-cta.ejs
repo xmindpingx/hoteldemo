@@ -1,0 +1,26 @@
+<%
+  const c = site.contact, g = site.general;
+  if (c.enabled !== false) {
+%>
+<section class="max-w-page mx-auto px-4 py-16 lg:py-24" id="contact">
+  <div class="rounded-3xl bg-brand text-white p-8 lg:p-14 grid gap-8 lg:grid-cols-2 items-center relative overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-white/5"></div>
+    <div class="relative">
+      <div class="eyebrow text-accent">Contact</div>
+      <h2 class="font-heading text-3xl lg:text-4xl leading-tight"><%= c.heading || 'Contact Us' %></h2>
+      <% if (c.intro) { %><p class="mt-4 text-white/80 leading-relaxed"><%= c.intro %></p><% } %>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="<%= h.bookingHref(site) %>" class="btn btn-accent px-6 py-3"><%= g.bookNowLabel || 'Check Rates' %><%- icon('arrow-right', 'w-4 h-4') %></a>
+        <% if (g.phone) { %><a href="<%= h.telHref(g.phone) %>" class="btn btn-ghost px-6 py-3"><%- icon('phone', 'w-4 h-4') %><%= g.phone %></a><% } %>
+      </div>
+    </div>
+    <ul class="relative grid sm:grid-cols-2 gap-4 text-sm">
+      <% if (h.fullAddress(g.address)) { %><li class="rounded-xl bg-white/10 p-4 flex gap-3"><%- icon('map-pin', 'w-5 h-5 text-accent shrink-0') %><span><span class="block text-white/60 text-xs uppercase tracking-wider">Address</span><%= h.fullAddress(g.address) %></span></li><% } %>
+      <% if (g.phone) { %><li class="rounded-xl bg-white/10 p-4 flex gap-3"><%- icon('phone', 'w-5 h-5 text-accent shrink-0') %><span><span class="block text-white/60 text-xs uppercase tracking-wider">Phone</span><%= g.phone %></span></li><% } %>
+      <% if (g.email) { %><li class="rounded-xl bg-white/10 p-4 flex gap-3"><%- icon('mail', 'w-5 h-5 text-accent shrink-0') %><span><span class="block text-white/60 text-xs uppercase tracking-wider">Email</span><%= g.email %></span></li><% } %>
+      <% if (c.hours) { %><li class="rounded-xl bg-white/10 p-4 flex gap-3"><%- icon('clock', 'w-5 h-5 text-accent shrink-0') %><span><span class="block text-white/60 text-xs uppercase tracking-wider">Hours</span><%= c.hours %></span></li><% } %>
+      <% if (g.checkInTime || g.checkOutTime) { %><li class="rounded-xl bg-white/10 p-4 flex gap-3"><%- icon('key', 'w-5 h-5 text-accent shrink-0') %><span><span class="block text-white/60 text-xs uppercase tracking-wider">Check-in / out</span><%= [g.checkInTime, g.checkOutTime].filter(Boolean).join(' / ') %></span></li><% } %>
+    </ul>
+  </div>
+</section>
+<% } %>
