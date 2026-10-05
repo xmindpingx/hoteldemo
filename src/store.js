@@ -81,6 +81,15 @@ function slugify(s) {
     .slice(0, 80) || 'item';
 }
 
+/** "/Suites/" → "/suites"; "" → "". Keeps query strings out. */
+function normalizePath(p) {
+  let s = String(p || '').trim().split(/[?#]/)[0];
+  if (!s) return '';
+  if (!s.startsWith('/')) s = '/' + s;
+  if (s.length > 1) s = s.replace(/\/+$/, '');
+  return s;
+}
+
 // ---------- datasets ----------
 function loadDefaults() {
   return readJson(DEFAULTS_FILE, null);
@@ -115,6 +124,7 @@ const LIST_PATHS = [
   ['rooms', 'items'], ['amenities', 'featured'], ['amenities', 'categories'], ['amenities', 'policies'], ['dining', 'items'], ['dining', 'nearby'],
   ['area', 'attractions'], ['area', 'airports'], ['area', 'transport'], ['gallery', 'items'], ['reviews', 'items'], ['faq', 'items'],
   ['customSections'], ['footer', 'links'], ['footer', 'social'],
+  ['seo', 'redirects'], ['seo', 'keywords'], ['seo', 'schema', 'amenityFeatures'], ['seo', 'schema', 'sameAs'], ['seo', 'local', 'serviceAreas'],
 ];
 
 /** Make sure every section/field exists, every list item has an id, every room has a unique slug. */
@@ -147,6 +157,16 @@ function normalize(site) {
   });
 
   out.amenities.categories.forEach((c) => { if (!Array.isArray(c.items)) c.items = []; });
+  // SEO: make sure every known page has an override slot, tidy the site URL and redirect rules.
+  if (blank.seo && blank.seo.pages) {
+    out.seo.pages = isPlainObject(out.seo.pages) ? out.seo.pages : {};
+    for (const k of Object.keys(blank.seo.pages)) out.seo.pages[k] = merge(blank.seo.pages[k], out.seo.pages[k]);
+  }
+  out.seo.siteUrl = String(out.seo.siteUrl || '').trim().replace(/\/+$/, '');
+  if (out.seo.siteUrl && !/^https?:\/\//i.test(out.seo.siteUrl)) out.seo.siteUrl = 'https://' + out.seo.siteUrl;
+  out.seo.redirects = out.seo.redirects
+    .filter((r) => isPlainObject(r))
+    .map((r) => ({ ...r, from: normalizePath(r.from), to: String(r.to || '').trim(), type: Number(r.type) === 302 ? 302 : 301 }));
   if (!Array.isArray(out.layout.homeOrder)) out.layout.homeOrder = clone(blank.layout.homeOrder);
   if (!Array.isArray(out.area.categories)) out.area.categories = clone(blank.area.categories);
   out.meta = out.meta || {};
@@ -306,5 +326,6 @@ module.exports = {
   getSecret,
   newId,
   slugify,
+  normalizePath,
   clone,
 };

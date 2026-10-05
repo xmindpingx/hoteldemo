@@ -65,6 +65,9 @@
     database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
     menu: '<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>',
     lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+    chart: '<line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>',
   };
   const svg = (name, cls = '') => {
     const body = UI[name] || (state.meta && state.meta.iconSvgs && state.meta.iconSvgs[name]) || UI.check;
@@ -168,12 +171,7 @@
       { type: 'row3', fields: [F.sel('headerStyle', 'Header style', [['light', 'Light (white)'], ['dark', 'Dark (primary color)']]), F.sel('buttonStyle', 'Button corners', [['rounded', 'Rounded'], ['pill', 'Pill'], ['none', 'Square']]), F.num('heroOverlay', 'Hero darkness (0–90 %)', { min: 0, max: 90 })] },
       F.code('customCss', 'Custom CSS', { help: 'Advanced: injected into every page.' }),
     ] },
-    { id: 'seo', title: 'SEO & Head', icon: 'search', group: 'Site', path: ['seo'], fields: [
-      F.text('title', 'Browser/SEO title', { help: 'Leave blank to use the hotel name' }),
-      F.area('description', 'Meta description'),
-      { type: 'row', fields: [F.img('ogImage', 'Social share image'), F.img('favicon', 'Favicon')] },
-      F.code('customHeadHtml', 'Custom <head> HTML', { help: 'Analytics tags, verification meta tags, etc.' }),
-    ] },
+    { id: 'seo', title: 'SEO Wizard', icon: 'search', group: 'Site', custom: 'seo' },
     { id: 'nav', title: 'Navigation', icon: 'menu', group: 'Site', path: [], fields: [
       F.list('nav', 'Menu items', [{ type: 'row', fields: [F.text('label', 'Label'), F.text('href', 'Link')] }, F.bool('enabled', 'Show in menu')], { itemLabel: 'label', template: { label: 'New page', href: '/', enabled: true } }),
       { type: 'note', html: 'Available pages: <code>/</code>, <code>/suites</code>, <code>/amenities</code>, <code>/dining</code>, <code>/area</code>, <code>/gallery</code>, <code>/reviews</code>, <code>/contact</code>, plus <code>/#faq</code>-style anchors and external links.' },
@@ -611,6 +609,484 @@
     );
   }
 
+  // ------------------------------------------------------------------ SEO wizard
+  // Client mirrors of src/seo.js constants/logic. Kept as exact copies (not re-derived) so the
+  // patterns and validation shown here never drift from what actually ships. The authoritative
+  // preview (title/description/JSON-LD/robots.txt) always comes from the server via /seo/preview —
+  // these mirrors are only used for the title-pattern picker buttons and the analytics ID hints.
+  const SEO_PAGE_KEYS = ['home', 'suites', 'amenities', 'dining', 'area', 'gallery', 'reviews', 'contact'];
+  const SEO_PAGE_LABELS = { home: 'Home', suites: 'Suites & Rooms', amenities: 'Amenities', dining: 'Dining', area: 'Local Area', gallery: 'Gallery', reviews: 'Guest Reviews', contact: 'Contact' };
+  const SEO_SCHEMA_TYPES = ['Hotel', 'Motel', 'LodgingBusiness', 'BedAndBreakfast', 'Hostel', 'Resort', 'Campground'];
+  const SEO_TITLE_MAX = 60, SEO_DESC_MAX = 160;
+  const SEO_GA_RE = /^G-[A-Z0-9]{4,}$/i, SEO_GTM_RE = /^GTM-[A-Z0-9]{4,}$/i, SEO_PIXEL_RE = /^\d{6,}$/, SEO_CLARITY_RE = /^[a-z0-9]{6,}$/i;
+  // Title patterns observed on pages that currently rank for "extended stay hotel <city>" queries —
+  // same annotated list used server-side in src/seo.js (HOME_TITLE_TEMPLATES / PAGE_TITLE_TEMPLATES).
+  const SEO_HOME_TEMPLATES = [
+    { tpl: '{category} in {city}, {state} | {hotel}', note: 'Category first, then location, then name (WoodSpring pattern)' },
+    { tpl: '{city}, {state} {category}', note: 'Location + category only (InTown Suites pattern)' },
+    { tpl: '{hotel} | {category} with {amenity}', note: 'Name, then category and a key amenity (Residence Inn pattern)' },
+    { tpl: '{city}, {state} - {hotel} | {brand}', note: 'Location, property, brand (Extended Stay America pattern)' },
+    { tpl: '{hotel} – {city}, {state}', note: 'Simple: name and location' },
+    { tpl: '{hotel} | {category} in {city}, {state}', note: 'Name first, then category and location' },
+  ];
+  const SEO_PAGE_TEMPLATES = [
+    { tpl: '{page} | {hotel}', note: 'Page name, then hotel name' },
+    { tpl: '{page} – {hotel} {city}, {state}', note: 'Page name, hotel and location' },
+    { tpl: '{page} | {hotel} – {city}', note: 'Page name, hotel, city' },
+    { tpl: '{page} at {hotel} | {category} in {city}, {state}', note: 'Long form with category' },
+  ];
+
+  function seoFullName(g) { return [g.hotelName, g.locationLine].filter(Boolean).join(' '); }
+  function seoTemplateVars(site) {
+    const g = site.general, sd = site.seo, a = g.address || {};
+    const s = (v) => (v == null ? '' : String(v).trim());
+    return { hotel: s(g.hotelName), site: s(sd.title) || seoFullName(g), brand: s(g.brandLine) || s(g.logoText) || s(g.hotelName), city: s(a.city), state: s(a.state), zip: s(a.zip), category: s(sd.category) || 'Hotel', amenity: s(sd.keyAmenity), tagline: s(g.tagline), phone: s(g.phone), page: '' };
+  }
+  function seoRenderTemplate(tpl, vars) {
+    let out = String(tpl || '').replace(/\{(\w+)\}/g, (_, k) => (vars[k] == null ? '' : String(vars[k])));
+    out = out.replace(/\s*(\||–|—|-|·)\s*(\||–|—|-|·)\s*/g, ' $1 ').replace(/^\s*(\||–|—|-|·|,|:)\s*/g, '').replace(/\s*(\||–|—|-|·|,|:)\s*$/g, '').replace(/\s+,/g, ',').replace(/\(\s*\)/g, '').replace(/\s{2,}/g, ' ').replace(/\bin\s*,/g, 'in').replace(/\s+with\s*$/, '').trim();
+    return out;
+  }
+
+  const seoState = { step: 'basics', page: 'home', container: null, lastSuggestions: null };
+
+  async function seoPreview(pageKey) {
+    return api('/seo/preview', { method: 'POST', body: { site: state.site, page: pageKey } });
+  }
+
+  function seoCounterEl() { return h('span', { class: 'char-counter' }); }
+  function seoUpdateCounter(el, n, max) {
+    el.textContent = `${n} / ${max} characters`;
+    el.className = 'char-counter ' + (n === 0 ? '' : n > max ? 'over' : n > max * 0.85 ? 'warn' : 'ok');
+  }
+
+  function seoPatternPicker(templates, templatePath, previewPage) {
+    const wrap = h('div', { class: 'seo-pattern-list' });
+    const vars = seoTemplateVars(state.site);
+    if (previewPage) vars.page = previewPage;
+    const current = getPath(state.site, templatePath);
+    templates.forEach((t) => {
+      const text = seoRenderTemplate(t.tpl, vars);
+      wrap.append(h('button', { type: 'button', class: 'seo-pattern' + (current === t.tpl ? ' active' : ''),
+        onclick: () => { setPath(state.site, templatePath, t.tpl); markDirty(); renderSeo(seoState.container); } },
+        h('div', { class: 'seo-pattern-text' }, text || '(fill in hotel name / city / state to preview)'),
+        h('div', { class: 'seo-pattern-note' }, t.note),
+      ));
+    });
+    return wrap;
+  }
+
+  function seoJump(stepId) {
+    return (e) => { if (e) e.preventDefault(); seoState.step = stepId; renderSeo(seoState.container); };
+  }
+
+  // ---- step: Basics
+  function renderSeoBasics(body) {
+    const base = ['seo'];
+    const nodes = [
+      h('div', { class: 'grid-2' },
+        renderField(F.text('siteUrl', 'Site URL (canonical)', { help: 'The exact URL the live site will use once hosted, e.g. https://hoteldemo1.signaturediversified.com' }), base),
+        renderField(F.text('category', 'Business category phrase', { help: 'Used in title templates the way top-ranking hotel pages do, e.g. "Extended Stay Hotel"' }), base),
+      ),
+      renderField(F.text('keyAmenity', 'Key amenity to highlight in titles', { help: 'A short phrase, e.g. "Weekly & Monthly Rates"' }), base),
+      h('div', { class: 'grid-2' },
+        renderField(F.text('title', 'Fallback browser/SEO title', { help: 'Used only where no page template or override applies' }), base),
+        renderField(F.img('ogImage', 'Default social share image', { help: 'Used when a page has no image of its own. Recommended 1200×630.' }), base),
+      ),
+      renderField(F.area('description', 'Fallback meta description'), base),
+      renderField(F.img('favicon', 'Favicon'), base),
+      h('div', { class: 'field' },
+        h('label', {}, 'Home page title pattern'),
+        h('div', { class: 'help' }, 'Patterns seen on pages that currently rank for "extended stay hotel <city>" searches. Click one to use it for the home page.'),
+        seoPatternPicker(SEO_HOME_TEMPLATES, [...base, 'homeTitleTemplate']),
+      ),
+      h('div', { class: 'field' },
+        h('label', {}, 'Other pages title pattern'),
+        h('div', { class: 'help' }, 'Applies to every page except the home page (Suites, Amenities, Dining, etc.) unless that page has its own title override.'),
+        seoPatternPicker(SEO_PAGE_TEMPLATES, [...base, 'pageTitleTemplate'], 'Amenities'),
+      ),
+      renderField(F.strings('keywords', 'Target keywords', { help: 'Phrases you want to rank for — the audit checks that these appear in your titles and descriptions.' }), base),
+      renderField(F.bool('metaKeywords', 'Also output a <meta name="keywords"> tag', { help: 'Most search engines ignore this tag today; harmless to leave on.' }), base),
+    ];
+    body.append(h('div', { class: 'card-body' }, nodes));
+  }
+
+  // ---- step: Pages & Previews
+  function renderSeoPages(body) {
+    const wrap = h('div', { class: 'card-body' });
+    const pageSel = h('select', {}, SEO_PAGE_KEYS.map((k) => h('option', { value: k, selected: k === seoState.page }, SEO_PAGE_LABELS[k])));
+    const serpBox = h('div', { class: 'serp' }, h('div', { class: 'muted small' }, 'Loading preview…'));
+    const titleCounter = seoCounterEl(), descCounter = seoCounterEl();
+    const fieldsBox = h('div', { class: 'seo-page-fields' });
+    let timer;
+    const scheduleRefresh = () => { clearTimeout(timer); timer = setTimeout(refresh, 450); };
+
+    async function refresh() {
+      try {
+        const r = await seoPreview(seoState.page);
+        seoState.lastSuggestions = r.suggestions;
+        serpBox.innerHTML = '';
+        serpBox.append(
+          h('div', { class: 'serp-url' }, r.meta.canonical || `${r.meta.base || ''}${r.meta.path}`),
+          h('div', { class: 'serp-title' }, r.meta.title),
+          r.meta.description ? h('div', { class: 'serp-desc' }, r.meta.description) : h('div', { class: 'serp-desc muted' }, '(no description set — search engines will pick their own excerpt)'),
+          r.meta.noindex ? h('span', { class: 'pill', style: 'margin-top:6px;display:inline-block' }, 'noindex — hidden from search results') : null,
+        );
+        seoUpdateCounter(titleCounter, r.meta.title.length, SEO_TITLE_MAX);
+        seoUpdateCounter(descCounter, r.meta.description.length, SEO_DESC_MAX);
+      } catch (e) {
+        serpBox.innerHTML = ''; serpBox.append(h('div', { class: 'alert alert-error' }, e.message));
+      }
+    }
+
+    function renderFieldsForPage() {
+      fieldsBox.innerHTML = '';
+      const base = ['seo', 'pages', seoState.page];
+      const descField = renderField(F.area('description', 'Description override', { help: 'Leave blank to fall back to this page\'s intro text, then the global description' }), base);
+      descField.append(h('div', { class: 'list-actions', style: 'margin-top:6px' },
+        h('button', { type: 'button', class: 'btn btn-sm', onclick: () => {
+          const sug = seoState.lastSuggestions;
+          const text = sug && sug.descriptions && sug.descriptions[seoState.page];
+          if (!text) { toast('No suggestion available yet for this page', 'err'); return; }
+          setPath(state.site, [...base, 'description'], text);
+          markDirty(); renderFieldsForPage(); scheduleRefresh();
+        } }, 'Use suggested description'),
+      ));
+      fieldsBox.append(
+        h('div', { class: 'grid-2' },
+          renderField(F.text('title', 'Title override', { help: 'Leave blank to use the title pattern set under Basics' }), base),
+          renderField(F.img('ogImage', 'Social image override', { help: 'Leave blank to use the site-wide social image' }), base),
+        ),
+        descField,
+        renderField(F.bool('noindex', 'Hide this page from search engines (noindex)'), base),
+      );
+    }
+
+    pageSel.addEventListener('change', () => { seoState.page = pageSel.value; renderFieldsForPage(); refresh(); });
+    wrap.addEventListener('input', scheduleRefresh);
+    wrap.addEventListener('change', (e) => { if (e.target !== pageSel) scheduleRefresh(); });
+
+    renderFieldsForPage();
+    wrap.append(
+      h('div', { class: 'field' }, h('label', {}, 'Page to preview & edit'), pageSel),
+      h('div', { class: 'card', style: 'margin:0' },
+        h('div', { class: 'card-head' }, h('h2', {}, 'Live search result preview'), h('span', { class: 'spacer' }), h('button', { type: 'button', class: 'btn btn-sm', html: svg('refresh') + ' Refresh', onclick: refresh })),
+        h('div', { class: 'card-body' }, serpBox, h('div', { class: 'seo-metrics' }, titleCounter, descCounter)),
+      ),
+      fieldsBox,
+    );
+    body.append(wrap);
+    refresh();
+  }
+
+  // ---- step: Social Cards
+  function renderSeoSocial(body) {
+    const base = ['seo', 'social'];
+    const previewBox = h('div', { class: 'serp' }, h('div', { class: 'muted small' }, 'Click "Preview card" to see how a shared link will look.'));
+    const nodes = [
+      h('div', { class: 'grid-2' },
+        renderField(F.sel('ogType', 'Open Graph type', [['website', 'Website'], ['article', 'Article'], ['product', 'Product']]), base),
+        renderField(F.text('ogLocale', 'Open Graph locale', { help: 'e.g. en_US' }), base),
+      ),
+      h('div', { class: 'grid-2' },
+        renderField(F.sel('twitterCard', 'Twitter/X card style', [['summary_large_image', 'Large image'], ['summary', 'Small summary']]), base),
+        renderField(F.text('twitterSite', 'Twitter/X @handle', { help: 'e.g. @yourhotel' }), base),
+      ),
+      renderField(F.text('fbAppId', 'Facebook App ID', { help: 'Optional — only needed if you use Facebook Insights for this site' }), base),
+      h('div', { class: 'card', style: 'margin:0' },
+        h('div', { class: 'card-head' }, h('h2', {}, 'Social share card preview'), h('span', { class: 'spacer' }),
+          h('button', { type: 'button', class: 'btn btn-sm btn-primary', html: svg('refresh') + ' Preview card', onclick: async () => {
+            try {
+              const r = await seoPreview('home');
+              previewBox.innerHTML = '';
+              previewBox.append(
+                r.meta.ogImage ? h('div', { class: 'thumb', style: 'width:100%;height:160px;margin-bottom:8px' }, h('img', { src: r.meta.ogImage, alt: '', style: 'width:100%;height:100%;object-fit:cover;border-radius:8px' })) : null,
+                h('div', { class: 'serp-url' }, (r.meta.base || '').replace(/^https?:\/\//, '')),
+                h('div', { class: 'serp-title' }, r.meta.title),
+                h('div', { class: 'serp-desc' }, r.meta.description),
+              );
+            } catch (e) { toast(e.message, 'err'); }
+          } })),
+        h('div', { class: 'card-body' }, previewBox)),
+    ];
+    body.append(h('div', { class: 'card-body' }, nodes));
+  }
+
+  // ---- step: Structured Data
+  function renderSeoSchema(body) {
+    const base = ['seo', 'schema'];
+    const jsonBox = h('pre', { class: 'seo-jsonld' }, 'Click "Preview structured data" to see it.');
+    const nodes = [
+      renderField(F.bool('enabled', 'Output structured data (JSON-LD)', { help: 'Turning this off removes all schema.org markup from every page.' }), base),
+      h('div', { class: 'grid-2' },
+        renderField(F.sel('type', 'Business type', SEO_SCHEMA_TYPES), base),
+        renderField(F.text('priceRange', 'Price range', { help: 'e.g. "$" — shown in Google\'s knowledge panel' }), base),
+      ),
+      h('div', { class: 'grid-2' },
+        renderField(F.num('numberOfRooms', 'Number of rooms'), base),
+        renderField(F.sel('petsAllowed', 'Pets allowed', [['', 'Not set'], ['true', 'Yes'], ['false', 'No']]), base),
+      ),
+      h('div', { class: 'grid-2' },
+        renderField(F.text('openingHours', 'Office hours', { help: 'schema.org format, e.g. Mo-Su 00:00-23:59' }), base),
+        renderField(F.text('paymentAccepted', 'Payment methods accepted', { help: 'e.g. "Cash, Credit Card"' }), base),
+      ),
+      renderField(F.text('slogan', 'Slogan'), base),
+      renderField(F.strings('amenityFeatures', 'Amenity features override', { help: 'Leave empty to use the amenities already listed on the site' }), base),
+      renderField(F.strings('sameAs', 'Other official profile links', { help: 'Google Business Profile, TripAdvisor, etc. — also pulled automatically from Footer → Social links' }), base),
+      renderField(F.text('googleBusinessUrl', 'Google Business Profile URL'), base),
+      h('div', { class: 'grid-3' },
+        renderField(F.bool('faq', 'Include FAQ schema'), base),
+        renderField(F.bool('breadcrumbs', 'Include breadcrumb schema'), base),
+        renderField(F.bool('rooms', 'Include room/offer schema'), base),
+      ),
+      h('div', { class: 'grid-2' },
+        renderField(F.bool('website', 'Include website schema'), base),
+        renderField(F.bool('reviews', 'Include review ratings in schema'), base),
+      ),
+      h('div', { class: 'alert alert-warn' }, 'Google does not display star ratings for reviews a business publishes about itself on its own site. If "Include review ratings" is on, Google may simply ignore it — collect reviews on your Google Business Profile instead for ratings that can show in search results.'),
+      h('div', { class: 'card', style: 'margin:0' },
+        h('div', { class: 'card-head' }, h('h2', {}, 'Structured data preview'), h('span', { class: 'spacer' }),
+          h('a', { class: 'btn btn-sm', href: 'https://search.google.com/test/rich-results', target: '_blank', rel: 'noopener', html: svg('external') + ' Google Rich Results Test' }),
+          h('button', { type: 'button', class: 'btn btn-sm btn-primary', html: svg('refresh') + ' Preview structured data', onclick: async () => {
+            try { const r = await seoPreview('home'); jsonBox.textContent = JSON.stringify(r.jsonLd, null, 2); } catch (e) { toast(e.message, 'err'); }
+          } })),
+        h('div', { class: 'card-body' }, jsonBox)),
+    ];
+    body.append(h('div', { class: 'card-body' }, nodes));
+  }
+
+  // ---- step: Local SEO
+  function renderSeoLocal(body) {
+    const base = ['seo', 'local'];
+    const g = state.site.general, a = g.address || {};
+    const nap = [seoFullName(g), [a.street, [a.city, [a.state, a.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')].filter(Boolean).join(', '), g.phone].filter(Boolean);
+    const area = state.site.area || {};
+    const nodes = [
+      h('div', { class: 'alert alert-info' },
+        h('strong', {}, 'NAP (Name, Address, Phone): '), nap.join(' · ') || 'Fill in General & Contact Info first.',
+        h('div', { class: 'small', style: 'margin-top:4px' }, 'Keep this exact wording consistent everywhere the hotel is listed online (Google Business Profile, Yelp, TripAdvisor, directories) — inconsistent NAP hurts local rankings.'),
+      ),
+      h('div', { class: 'grid-2' },
+        renderField(F.text('geoRegion', 'Geo region code', { help: 'ISO 3166-2 code, e.g. US-AZ' }), base),
+        renderField(F.text('geoPlacename', 'Geo place name', { help: 'e.g. Mesa, Arizona' }), base),
+      ),
+      renderField(F.strings('serviceAreas', 'Service areas', { help: 'Cities/areas you serve — used as areaServed in structured data' }), base),
+      h('div', { class: 'alert', style: 'background:#f9fafb;border:1px solid var(--line)' },
+        `Map coordinates: ${area.latitude && area.longitude ? `${area.latitude}, ${area.longitude}` : 'not set'}. `,
+        h('a', { href: '#area' }, 'Edit under Local Area →'),
+      ),
+      h('div', { class: 'alert', style: 'background:#f9fafb;border:1px solid var(--line)' },
+        'Google Business Profile URL is set under Structured Data. ',
+        h('a', { href: '#', onclick: seoJump('schema') }, 'Edit there →'),
+      ),
+    ];
+    body.append(h('div', { class: 'card-body' }, nodes));
+  }
+
+  // ---- step: Search Engines
+  function renderSeoSearch(body) {
+    const robotsBox = h('pre', { class: 'seo-jsonld' }, 'Click "Preview" to see the generated robots.txt and sitemap size.');
+    const nodes = [
+      h('div', { class: 'grid-2' },
+        renderField(F.bool('index', 'Allow search engines to index this site'), ['seo', 'robots']),
+        renderField(F.bool('follow', 'Allow search engines to follow links'), ['seo', 'robots']),
+      ),
+      renderField(F.code('custom', 'Custom robots.txt (advanced)', { help: 'Completely replaces the generated robots.txt below. Leave blank to use the generated version.' }), ['seo', 'robots']),
+      h('div', { class: 'grid-3' },
+        renderField(F.bool('enabled', 'Enable sitemap.xml'), ['seo', 'sitemap']),
+        renderField(F.bool('includeRooms', 'Include suite pages in sitemap'), ['seo', 'sitemap']),
+        renderField(F.sel('changefreq', 'Change frequency', ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']), ['seo', 'sitemap']),
+      ),
+      h('div', { class: 'grid-3' },
+        renderField(F.num('priorityHome', 'Priority: home (0–1)', { step: 0.1, min: 0, max: 1 }), ['seo', 'sitemap']),
+        renderField(F.num('priorityPages', 'Priority: other pages (0–1)', { step: 0.1, min: 0, max: 1 }), ['seo', 'sitemap']),
+        renderField(F.num('priorityRooms', 'Priority: suite pages (0–1)', { step: 0.1, min: 0, max: 1 }), ['seo', 'sitemap']),
+      ),
+      h('div', { class: 'grid-2' },
+        renderField(F.text('google', 'Google Search Console verification code', { help: 'Paste just the content value of the HTML-tag verification Search Console gives you' }), ['seo', 'verification']),
+        renderField(F.text('bing', 'Bing Webmaster Tools verification code'), ['seo', 'verification']),
+      ),
+      h('div', { class: 'grid-3' },
+        renderField(F.text('pinterest', 'Pinterest verification code'), ['seo', 'verification']),
+        renderField(F.text('yandex', 'Yandex verification code'), ['seo', 'verification']),
+        renderField(F.text('facebookDomain', 'Facebook domain verification code'), ['seo', 'verification']),
+      ),
+      h('div', { class: 'list-actions' },
+        h('a', { class: 'btn btn-sm', href: 'https://search.google.com/search-console', target: '_blank', rel: 'noopener', html: svg('external') + ' Google Search Console' }),
+        h('a', { class: 'btn btn-sm', href: 'https://www.bing.com/webmasters', target: '_blank', rel: 'noopener', html: svg('external') + ' Bing Webmaster Tools' }),
+      ),
+      h('div', { class: 'card', style: 'margin:0' },
+        h('div', { class: 'card-head' }, h('h2', {}, 'robots.txt & sitemap preview'), h('span', { class: 'spacer' }),
+          h('button', { type: 'button', class: 'btn btn-sm btn-primary', html: svg('refresh') + ' Preview', onclick: async () => {
+            try { const r = await seoPreview('home'); robotsBox.textContent = `${r.robotsTxt}\n— sitemap.xml will list ${r.sitemapCount} URL(s) —`; } catch (e) { toast(e.message, 'err'); }
+          } })),
+        h('div', { class: 'card-body' }, robotsBox)),
+    ];
+    body.append(h('div', { class: 'card-body' }, nodes));
+  }
+
+  // ---- step: Analytics
+  function renderSeoAnalytics(body) {
+    const base = ['seo', 'analytics'];
+    const an = state.site.seo.analytics || {};
+    const hint = (val, re, example) => h('div', { class: 'small', style: `margin-top:-2px;color:${val ? (re.test(val) ? 'var(--ok)' : 'var(--danger)') : 'var(--muted)'}` }, val ? (re.test(val) ? '✓ looks valid' : `Doesn't look right — expected something like ${example}`) : `Expected format: ${example}`);
+    const nodes = [
+      h('div', { class: 'grid-2' },
+        h('div', {}, renderField(F.text('ga4', 'Google Analytics 4 Measurement ID'), base), hint(an.ga4, SEO_GA_RE, 'G-XXXXXXX')),
+        h('div', {}, renderField(F.text('gtm', 'Google Tag Manager container ID'), base), hint(an.gtm, SEO_GTM_RE, 'GTM-XXXXXXX')),
+      ),
+      h('div', { class: 'grid-2' },
+        h('div', {}, renderField(F.text('metaPixel', 'Meta (Facebook) Pixel ID'), base), hint(an.metaPixel, SEO_PIXEL_RE, 'a numeric ID, 6+ digits')),
+        h('div', {}, renderField(F.text('clarity', 'Microsoft Clarity project ID'), base), hint(an.clarity, SEO_CLARITY_RE, 'a 6+ character project ID')),
+      ),
+      renderField(F.code('bodyEndHtml', 'Custom HTML before </body>'), base),
+      renderField(F.code('customHeadHtml', 'Custom <head> HTML (advanced)', { help: 'Raw HTML injected into every page\'s <head> — extra verification tags, scripts, etc.' }), ['seo']),
+    ];
+    body.append(h('div', { class: 'card-body' }, nodes));
+  }
+
+  // ---- step: Hosting & Redirects
+  function renderSeoHosting(body) {
+    const nodes = [
+      h('div', { class: 'alert', style: 'background:#f9fafb;border:1px solid var(--line)' },
+        `Site URL is set under Basics: `, h('strong', {}, state.site.seo.siteUrl || '(not set)'), ' ',
+        h('a', { href: '#', onclick: seoJump('basics') }, 'Edit there →'),
+      ),
+      h('div', { class: 'grid-3' },
+        renderField(F.bool('forceHttps', 'Force HTTPS', { help: 'Only turn on once the domain has a working SSL certificate — otherwise this can create a redirect loop.' }), ['seo', 'hosting']),
+        renderField(F.bool('enforceCanonicalHost', 'Enforce canonical host', { help: 'Redirects any other hostname pointed at this server to the exact host in Site URL (e.g. www → bare domain, or vice versa).' }), ['seo', 'hosting']),
+        renderField(F.bool('trailingSlashRedirect', 'Remove trailing slashes', { help: '/suites/ → /suites, avoiding duplicate-content issues.' }), ['seo', 'hosting']),
+      ),
+      renderField(F.list('redirects', 'Redirect rules', [
+        { type: 'row', fields: [F.text('from', 'From path', { help: '/old-page' }), F.text('to', 'To path or URL', { help: '/new-page' })] },
+        F.sel('type', 'Type', [['301', '301 – Permanent'], ['302', '302 – Temporary']]),
+      ], { itemLabel: 'from', template: { from: '/old-page', to: '/new-page', type: '301' } }), ['seo']),
+      h('div', { class: 'card' },
+        h('div', { class: 'card-head' }, h('h2', {}, 'Pointing a GoDaddy domain here')),
+        h('div', { class: 'card-body' },
+          h('div', {}, 'GoDaddy currently exposes DNS under: your Domain Portfolio → select the domain → ', h('strong', {}, 'Domain Settings'), ' → ', h('strong', {}, 'DNS'), ' tab → ', h('strong', {}, 'Add New Record'), '. Menu wording can change — GoDaddy\'s own help center is the source of truth if this looks different.'),
+          h('ul', { style: 'margin:0;padding-left:20px' },
+            h('li', {}, h('strong', {}, 'A record'), ' (host "@") pointing at this server\'s public IP address is the usual way to connect a domain directly to a server.'),
+            h('li', {}, 'If this site is hosted through a platform that gives you a hostname instead of an IP, use a ', h('strong', {}, 'CNAME'), ' record instead (usually on the "www" host, since the root domain cannot be a CNAME).'),
+          ),
+          h('div', { class: 'alert alert-warn' }, h('strong', {}, 'Domain forwarding and DNS records are two different mechanisms and should not both be set for the same hostname.'), ' Forwarding redirects visitors at the registrar before DNS is even consulted; an A/CNAME record points DNS directly at a server. Having both active for the same domain typically means only one of them actually takes effect, which shows up as the site not loading or loading the wrong thing. Use DNS records (A/CNAME) to point the domain at this server, not forwarding.'),
+          h('div', {}, 'Once DNS is live and the exact final domain is known, set it as the ', h('strong', {}, 'Site URL'), ' under Basics — every canonical link, sitemap entry and piece of structured data is built from that one field. Verify ownership with the codes under Search Engines once the domain resolves here, then only turn on Force HTTPS / Enforce canonical host after confirming the site loads correctly over https on the final domain.'),
+          h('div', { class: 'list-actions', style: 'margin-top:10px' },
+            h('a', { class: 'btn btn-sm', href: 'https://www.godaddy.com/help/manage-dns-680', target: '_blank', rel: 'noopener', html: svg('external') + ' GoDaddy: Manage DNS records' }),
+          ),
+        )),
+    ];
+    body.append(h('div', { class: 'card-body' }, nodes.filter(Boolean)));
+  }
+
+  // ---- step: Audit & Score
+  function seoScoreRing(score) {
+    const r = 46, c = 2 * Math.PI * r;
+    const color = score >= 80 ? 'var(--ok)' : score >= 50 ? '#b45309' : 'var(--danger)';
+    return h('svg', { viewBox: '0 0 110 110', style: 'width:110px;height:110px' },
+      (() => { const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); bg.setAttribute('cx', 55); bg.setAttribute('cy', 55); bg.setAttribute('r', r); bg.setAttribute('fill', 'none'); bg.setAttribute('stroke', '#e5e7eb'); bg.setAttribute('stroke-width', 10); return bg; })(),
+      (() => { const fg = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); fg.setAttribute('cx', 55); fg.setAttribute('cy', 55); fg.setAttribute('r', r); fg.setAttribute('fill', 'none'); fg.setAttribute('stroke', color); fg.setAttribute('stroke-width', 10); fg.setAttribute('stroke-linecap', 'round'); fg.setAttribute('stroke-dasharray', `${(score / 100) * c} ${c}`); fg.setAttribute('transform', 'rotate(-90 55 55)'); return fg; })(),
+      (() => { const t = document.createElementNS('http://www.w3.org/2000/svg', 'text'); t.setAttribute('x', 55); t.setAttribute('y', 62); t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '28'); t.setAttribute('font-weight', '700'); t.setAttribute('fill', color); t.textContent = String(score); return t; })(),
+    );
+  }
+
+  function seoStatusIcon(status) {
+    const map = { pass: ['check', 'var(--ok)'], warn: ['alert', '#b45309'], fail: ['x', 'var(--danger)'], info: ['help', 'var(--muted)'] };
+    const [name, color] = map[status] || map.info;
+    return h('span', { style: `color:${color};display:inline-flex`, html: svg(name) });
+  }
+
+  function renderSeoAudit(body) {
+    const resultBox = h('div', {});
+    const runBtn = h('button', { type: 'button', class: 'btn btn-primary', html: svg('refresh') + ' Run audit', onclick: run });
+    body.append(h('div', { class: 'card-body' },
+      h('div', {}, 'Fetches every live page on this server and grades it the way search engines see it — titles, descriptions, headings, structured data, robots.txt, sitemap, local SEO and analytics setup.'),
+      h('div', { class: 'list-actions' }, runBtn),
+      resultBox,
+    ));
+
+    async function run() {
+      runBtn.disabled = true; runBtn.innerHTML = svg('refresh') + ' Running…';
+      resultBox.innerHTML = '';
+      try {
+        const r = await api('/seo/audit');
+        seoState.lastAudit = r;
+        renderResult(r);
+      } catch (e) {
+        resultBox.append(h('div', { class: 'alert alert-error' }, e.message));
+      } finally {
+        runBtn.disabled = false; runBtn.innerHTML = svg('refresh') + ' Run audit again';
+      }
+    }
+
+    function renderResult(r) {
+      resultBox.innerHTML = '';
+      resultBox.append(
+        h('div', { class: 'card', style: 'margin:0' }, h('div', { class: 'card-body' },
+          h('div', { style: 'display:flex;align-items:center;gap:24px;flex-wrap:wrap' },
+            seoScoreRing(r.score),
+            h('div', {},
+              h('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' },
+                h('span', { class: 'pill ok' }, `${r.summary.pass} pass`),
+                h('span', { class: 'pill', style: 'background:#fef3c7;color:#92400e' }, `${r.summary.warn} warn`),
+                h('span', { class: 'pill', style: 'background:#fee2e2;color:#991b1b' }, `${r.summary.fail} fail`),
+              ),
+              h('div', { class: 'muted small', style: 'margin-top:6px' }, `Checked ${new Date(r.generatedAt).toLocaleString()} against ${r.base || '(no site URL set)'}`),
+            ),
+          ))),
+      );
+      r.groups.forEach((g) => {
+        resultBox.append(h('div', { class: 'card', style: 'margin-top:14px' },
+          h('div', { class: 'card-head' }, h('h2', {}, g.title)),
+          h('div', { class: 'card-body seo-checks' }, g.checks.map((c) => h('div', { class: `seo-check ${c.status}` },
+            seoStatusIcon(c.status),
+            h('div', { style: 'flex:1;min-width:0' }, h('div', { style: 'font-weight:600' }, c.label), h('div', { class: 'muted small' }, c.detail)),
+            c.step ? h('button', { type: 'button', class: 'btn btn-sm', onclick: seoJump(c.step) }, 'Fix') : null,
+          ))),
+        ));
+      });
+      if (r.pages && r.pages.length) {
+        const tbl = h('table', { class: 'tbl' },
+          h('thead', {}, h('tr', {}, ['Page', 'Status', 'Title', 'Description', 'H1', 'Images w/o alt', 'Issues'].map((t) => h('th', {}, t)))),
+          h('tbody', {}, r.pages.map((pg) => h('tr', {},
+            h('td', {}, h('div', {}, h('strong', {}, pg.label)), h('div', { class: 'mono small muted' }, pg.path)),
+            h('td', {}, pg.status === 200 ? h('span', { class: 'pill ok' }, '200') : h('span', { class: 'pill', style: 'background:#fee2e2;color:#991b1b' }, String(pg.status))),
+            h('td', {}, h('div', {}, pg.title || '—'), h('div', { class: `char-counter ${pg.titleLen > SEO_TITLE_MAX ? 'over' : 'ok'}` }, `${pg.titleLen} chars`)),
+            h('td', {}, h('div', { style: 'max-width:240px' }, pg.description || '—'), h('div', { class: `char-counter ${pg.descLen > SEO_DESC_MAX || (pg.descLen && pg.descLen < 70) ? 'warn' : 'ok'}` }, `${pg.descLen} chars`)),
+            h('td', {}, pg.h1),
+            h('td', {}, pg.imgsNoAlt || 0),
+            h('td', {}, pg.issues.length ? h('ul', { style: 'margin:0;padding-left:16px' }, pg.issues.map((i) => h('li', { class: 'small' }, i.msg))) : h('span', { class: 'muted small' }, 'none')),
+          ))),
+        );
+        resultBox.append(h('div', { class: 'card', style: 'margin-top:14px' }, h('div', { class: 'card-head' }, h('h2', {}, `Pages (${r.pages.length})`)), h('div', { style: 'overflow:auto' }, tbl)));
+      }
+    }
+
+    if (seoState.lastAudit) renderResult(seoState.lastAudit);
+  }
+
+  const SEO_STEPS = [
+    { id: 'basics', label: 'Basics', icon: 'search', render: renderSeoBasics },
+    { id: 'pages', label: 'Pages & Previews', icon: 'layout', render: renderSeoPages },
+    { id: 'social', label: 'Social Cards', icon: 'tag', render: renderSeoSocial },
+    { id: 'schema', label: 'Structured Data', icon: 'code', render: renderSeoSchema },
+    { id: 'local', label: 'Local SEO', icon: 'map', render: renderSeoLocal },
+    { id: 'search', label: 'Search Engines', icon: 'globe', render: renderSeoSearch },
+    { id: 'analytics', label: 'Analytics', icon: 'chart', render: renderSeoAnalytics },
+    { id: 'hosting', label: 'Hosting & Redirects', icon: 'upload', render: renderSeoHosting },
+    { id: 'audit', label: 'Audit & Score', icon: 'alert', render: renderSeoAudit },
+  ];
+
+  function renderSeo(container) {
+    seoState.container = container;
+    container.innerHTML = '';
+    const step = SEO_STEPS.find((s) => s.id === seoState.step) || SEO_STEPS[0];
+    const tabs = h('div', { class: 'seo-tabs' }, SEO_STEPS.map((s) => h('button', { type: 'button', class: 'seo-tab' + (s.id === step.id ? ' active' : ''), onclick: () => { seoState.step = s.id; renderSeo(container); } }, h('span', { html: svg(s.icon) }), h('span', {}, s.label))));
+    const body = h('div', {});
+    container.append(h('div', { class: 'seo-wizard' }, tabs, h('div', { class: 'card', style: 'margin-top:14px' }, h('div', { class: 'card-head' }, h('h2', {}, step.label)), body)));
+    step.render(body);
+  }
+
   // ------------------------------------------------------------------ shell & routing
   function renderShell() {
     const app = $('#app');
@@ -660,6 +1136,7 @@
     if (sec.custom === 'inquiries') return renderInquiries(content);
     if (sec.custom === 'media') return renderMedia(content);
     if (sec.custom === 'data') return renderData(content);
+    if (sec.custom === 'seo') return renderSeo(content);
     const body = h('div', { class: 'card-body' }, sec.fields.map((f) => renderField(f, sec.path)));
     content.append(h('div', { class: 'card' }, body));
     renderStatus();

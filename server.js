@@ -12,6 +12,7 @@ const compression = require('compression');
 const store = require('./src/store');
 const helpers = require('./src/helpers');
 const { icon } = require('./src/icons');
+const seo = require('./src/seo');
 const publicRouter = require('./src/public');
 const adminRouter = require('./src/admin');
 
@@ -27,6 +28,7 @@ if (process.env.NODE_ENV === 'production') app.set('view cache', true);
 
 app.locals.h = helpers;
 app.locals.icon = icon;
+app.locals.seo = seo;
 
 app.use(compression());
 app.use(cookieParser());
@@ -41,6 +43,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// SEO redirect rules, https/canonical-host enforcement, trailing-slash cleanup — before static
+// files and routing so a redirected URL never has to resolve to real content first.
+app.use(seo.middleware(store.getSite));
+
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0, etag: true, redirect: false }));
 
 app.use('/admin', adminRouter);
@@ -48,7 +54,12 @@ app.use('/', publicRouter);
 
 // 404
 app.use((req, res) => {
-  res.status(404).render('404', { site: store.getSite(), page: '404', title: 'Page not found', path: req.path, siteUrl: process.env.SITE_URL || '' });
+  const site = store.getSite();
+  const path = req.path;
+  const meta = seo.pageMeta(site, { path, page: '404', title: 'Page not found', req });
+  meta.noindex = true;
+  meta.robots = 'noindex, follow';
+  res.status(404).render('404', { site, page: '404', title: 'Page not found', path, siteUrl: seo.baseUrl(site, req), meta });
 });
 
 // errors

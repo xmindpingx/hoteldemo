@@ -1,7 +1,7 @@
 'use strict';
 const express = require('express');
 const store = require('./store');
-const h = require('./helpers');
+const seo = require('./seo');
 
 const router = express.Router();
 
@@ -9,9 +9,16 @@ const router = express.Router();
 router.use((req, res, next) => {
   res.locals.site = store.getSite();
   res.locals.path = req.path;
-  res.locals.siteUrl = (process.env.SITE_URL || '').replace(/\/$/, '');
+  res.locals.siteUrl = seo.baseUrl(res.locals.site, req);
   next();
 });
+
+/** Build res.locals.meta (title/description/canonical/OG/etc) for the current page and render head blocks. */
+function setMeta(res, ctx) {
+  const m = seo.pageMeta(res.locals.site, { ...ctx, path: res.locals.path, req: res.req || undefined });
+  res.locals.meta = m;
+  return m;
+}
 
 function sectionGuard(key) {
   return (req, res, next) => {
@@ -22,43 +29,59 @@ function sectionGuard(key) {
 }
 
 router.get('/', (req, res) => {
+  setMeta(res, { page: 'home', title: '' });
   res.render('home', { page: 'home', title: '' });
 });
 
 router.get('/suites', sectionGuard('rooms'), (req, res) => {
-  res.render('suites', { page: 'suites', title: res.locals.site.rooms.heading || 'Suites & Rooms' });
+  const title = res.locals.site.rooms.heading || 'Suites & Rooms';
+  setMeta(res, { page: 'suites', title });
+  res.render('suites', { page: 'suites', title });
 });
 
 router.get('/suites/:slug', sectionGuard('rooms'), (req, res, next) => {
   const room = res.locals.site.rooms.items.find((r) => r.slug === req.params.slug && r.enabled !== false);
   if (!room) return next();
+  setMeta(res, { page: 'suites', title: room.name, room });
   res.render('suite', { page: 'suites', title: room.name, room });
 });
 
 router.get('/amenities', sectionGuard('amenities'), (req, res) => {
-  res.render('amenities', { page: 'amenities', title: res.locals.site.amenities.heading || 'Amenities' });
+  const title = res.locals.site.amenities.heading || 'Amenities';
+  setMeta(res, { page: 'amenities', title, description: res.locals.site.amenities.intro });
+  res.render('amenities', { page: 'amenities', title });
 });
 
 router.get('/dining', sectionGuard('dining'), (req, res) => {
-  res.render('dining', { page: 'dining', title: res.locals.site.dining.heading || 'Dining' });
+  const title = res.locals.site.dining.heading || 'Dining';
+  setMeta(res, { page: 'dining', title, description: res.locals.site.dining.intro });
+  res.render('dining', { page: 'dining', title });
 });
 
 router.get('/area', sectionGuard('area'), (req, res) => {
-  res.render('area', { page: 'area', title: res.locals.site.area.heading || 'Local Area' });
+  const title = res.locals.site.area.heading || 'Local Area';
+  setMeta(res, { page: 'area', title, description: res.locals.site.area.intro });
+  res.render('area', { page: 'area', title });
 });
 
 router.get('/gallery', sectionGuard('gallery'), (req, res) => {
-  res.render('gallery', { page: 'gallery', title: res.locals.site.gallery.heading || 'Gallery' });
+  const title = res.locals.site.gallery.heading || 'Gallery';
+  setMeta(res, { page: 'gallery', title, description: res.locals.site.gallery.intro });
+  res.render('gallery', { page: 'gallery', title });
 });
 
 router.get('/reviews', sectionGuard('reviews'), (req, res) => {
-  res.render('reviews', { page: 'reviews', title: res.locals.site.reviews.heading || 'Guest Reviews' });
+  const title = res.locals.site.reviews.heading || 'Guest Reviews';
+  setMeta(res, { page: 'reviews', title, description: res.locals.site.reviews.intro });
+  res.render('reviews', { page: 'reviews', title });
 });
 
 router.get('/contact', (req, res) => {
+  const title = res.locals.site.contact.heading || 'Contact';
+  setMeta(res, { page: 'contact', title });
   res.render('contact', {
     page: 'contact',
-    title: res.locals.site.contact.heading || 'Contact',
+    title,
     prefill: { checkin: req.query.checkin || '', checkout: req.query.checkout || '', guests: req.query.guests || '', rooms: req.query.rooms || '', room: req.query.room || '' },
     sent: req.query.sent === '1',
     error: '',
@@ -77,6 +100,7 @@ router.post('/contact', (req, res) => {
   const now = Date.now();
   const hits = (recent.get(ip) || []).filter((t) => now - t < 10 * 60 * 1000);
   if (hits.length >= 5) {
+    setMeta(res, { page: 'contact', title: site.contact.heading });
     return res.status(429).render('contact', { page: 'contact', title: site.contact.heading, prefill: b, sent: false, error: 'Too many requests — please try again in a few minutes or call us.' });
   }
 
@@ -84,6 +108,7 @@ router.post('/contact', (req, res) => {
   const email = String(b.email || '').trim().slice(0, 160);
   const message = String(b.message || '').trim().slice(0, 4000);
   if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setMeta(res, { page: 'contact', title: site.contact.heading });
     return res.status(400).render('contact', { page: 'contact', title: site.contact.heading, prefill: b, sent: false, error: 'Please enter your name and a valid email address.' });
   }
 
@@ -105,17 +130,11 @@ router.post('/contact', (req, res) => {
 });
 
 router.get('/robots.txt', (req, res) => {
-  res.type('text/plain').send(`User-agent: *\nDisallow: /admin\n${res.locals.siteUrl ? `Sitemap: ${res.locals.siteUrl}/sitemap.xml\n` : ''}`);
+  res.type('text/plain').send(seo.robotsTxt(res.locals.site, req));
 });
 
 router.get('/sitemap.xml', (req, res) => {
-  const site = res.locals.site;
-  const base = res.locals.siteUrl || `${req.protocol}://${req.get('host')}`;
-  const urls = ['/', '/suites', '/amenities', '/dining', '/area', '/gallery', '/contact'];
-  if (site.reviews.enabled) urls.push('/reviews');
-  site.rooms.items.filter((r) => r.enabled !== false).forEach((r) => urls.push(`/suites/${r.slug}`));
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${h.esc(base + u)}</loc></url>`).join('\n')}\n</urlset>`;
-  res.type('application/xml').send(xml);
+  res.type('application/xml').send(seo.sitemapXml(res.locals.site, req));
 });
 
 module.exports = router;

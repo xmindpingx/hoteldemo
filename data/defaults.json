@@ -53,7 +53,138 @@
     "description": "Budget Suites Extended Stay in Mesa, Arizona: extended-stay motel suites with weekly and monthly rates, full-size refrigerator and microwave, private entrances and a courtyard lawn at 537 S Country Club Dr.",
     "ogImage": "/img/property/courtyard.jpg",
     "favicon": "",
-    "customHeadHtml": ""
+    "customHeadHtml": "",
+    "siteUrl": "https://hoteldemo1.signaturediversified.com",
+    "category": "Extended Stay Hotel",
+    "keyAmenity": "Weekly & Monthly Rates",
+    "homeTitleTemplate": "{category} in {city}, {state} | {hotel}",
+    "pageTitleTemplate": "{page} | {hotel}",
+    "keywords": [
+      "extended stay hotel Mesa AZ",
+      "weekly rates hotel Mesa",
+      "monthly hotel Mesa Arizona",
+      "budget suites Mesa"
+    ],
+    "metaKeywords": false,
+    "pages": {
+      "home": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "suites": {
+        "title": "",
+        "description": "King, Queen and One-Bedroom extended-stay suites in Mesa, AZ with a full-size refrigerator, microwave and private entrance. Weekly and monthly rates — call (480) 969-5248.",
+        "ogImage": "",
+        "noindex": false
+      },
+      "amenities": {
+        "title": "",
+        "description": "Amenities at Budget Suites Extended Stay in Mesa, AZ: courtyard lawn, covered parking, private entrances, fridge and microwave in every suite, office open 24 hours.",
+        "ogImage": "",
+        "noindex": false
+      },
+      "dining": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "area": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "gallery": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "reviews": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "contact": {
+        "title": "",
+        "description": "Contact Budget Suites Extended Stay, 537 S Country Club Dr, Mesa, AZ 85210. Call (480) 969-5248 for weekly and monthly rates or send a booking inquiry.",
+        "ogImage": "",
+        "noindex": false
+      }
+    },
+    "social": {
+      "ogType": "website",
+      "ogLocale": "en_US",
+      "twitterCard": "summary_large_image",
+      "twitterSite": "",
+      "fbAppId": ""
+    },
+    "schema": {
+      "enabled": true,
+      "type": "Motel",
+      "priceRange": "$",
+      "petsAllowed": "",
+      "openingHours": "Mo-Su 00:00-23:59",
+      "paymentAccepted": "",
+      "numberOfRooms": 0,
+      "slogan": "",
+      "amenityFeatures": [],
+      "sameAs": [],
+      "googleBusinessUrl": "",
+      "faq": true,
+      "breadcrumbs": true,
+      "rooms": true,
+      "website": true,
+      "reviews": false
+    },
+    "local": {
+      "geoRegion": "US-AZ",
+      "geoPlacename": "Mesa, Arizona",
+      "serviceAreas": [
+        "Mesa",
+        "Tempe",
+        "Chandler",
+        "Gilbert",
+        "Phoenix"
+      ]
+    },
+    "robots": {
+      "index": true,
+      "follow": true,
+      "custom": ""
+    },
+    "sitemap": {
+      "enabled": true,
+      "includeRooms": true,
+      "changefreq": "weekly",
+      "priorityHome": 1,
+      "priorityPages": 0.8,
+      "priorityRooms": 0.7
+    },
+    "verification": {
+      "google": "",
+      "bing": "",
+      "pinterest": "",
+      "yandex": "",
+      "facebookDomain": ""
+    },
+    "analytics": {
+      "ga4": "",
+      "gtm": "",
+      "metaPixel": "",
+      "clarity": "",
+      "bodyEndHtml": ""
+    },
+    "redirects": [],
+    "hosting": {
+      "forceHttps": false,
+      "enforceCanonicalHost": false,
+      "trailingSlashRedirect": true
+    }
   },
   "nav": [
     {

@@ -8,9 +8,13 @@ const auth = require('./auth');
 const { AMENITY_ICON_NAMES, ICONS } = require('./icons');
 const { FONT_OPTIONS } = require('./helpers');
 
+const seoLib = require('./seo');
+
 const router = express.Router();
 const UPLOAD_DIR = path.join(__dirname, '..', 'public', 'uploads');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Same resolution server.js uses — needed so the SEO audit can fetch its own pages over loopback.
+const SELF_PORT = Number(process.env.PORT) || 8097;
 
 // ---------- uploads ----------
 const ALLOWED = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif', 'image/svg+xml': '.svg', 'image/avif': '.avif' };
@@ -180,6 +184,40 @@ api.delete('/inquiries/:id', (req, res) => {
 api.delete('/inquiries', (req, res) => {
   store.clearInquiries();
   res.json({ ok: true });
+});
+
+// ---------- SEO wizard ----------
+// Preview: render title/description/JSON-LD/suggestions for the in-progress (unsaved) editor
+// state, exactly as it would look live — without touching disk.
+api.post('/seo/preview', (req, res) => {
+  try {
+    const draft = store.normalize((req.body && req.body.site) || {});
+    const pageKey = seoLib.PAGE_KEYS.includes(req.body && req.body.page) ? req.body.page : 'home';
+    const base = seoLib.baseUrl(draft, req);
+    const ctx = { path: seoLib.PAGE_PATHS[pageKey], page: pageKey, title: seoLib.PAGE_LABELS[pageKey], req, base };
+    if (pageKey === 'suites' && draft.rooms.items[0]) ctx.room = draft.rooms.items[0];
+    const meta = seoLib.pageMeta(draft, ctx);
+    res.json({
+      meta,
+      jsonLd: seoLib.jsonLd(draft, ctx),
+      suggestions: seoLib.suggestions(draft),
+      robotsTxt: seoLib.robotsTxt(draft, req),
+      sitemapCount: seoLib.sitemapEntries(draft, req).length,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Audit: grade the LIVE published site (fetches this server's own pages over loopback).
+api.get('/seo/audit', async (req, res) => {
+  try {
+    const site = store.getSite();
+    const result = await seoLib.audit(site, { port: SELF_PORT, base: seoLib.baseUrl(site, req) });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 api.post('/passphrase', (req, res) => {

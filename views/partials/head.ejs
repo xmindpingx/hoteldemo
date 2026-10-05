@@ -1,9 +1,8 @@
 <%
-  const g = site.general, t = site.theme, seo = site.seo;
-  const pageTitle = typeof title !== 'undefined' ? title : '';
-  const desc = (typeof description !== 'undefined' && description) ? description : (seo.description || g.tagline || '');
-  const ogImage = seo.ogImage || (site.hero.images[0] && site.hero.images[0].url) || '';
-  const absolute = (u) => (u && !/^https?:/i.test(u) && siteUrl) ? siteUrl + u : u;
+  const t = site.theme;
+  // Routes call setMeta() (src/public.js) and leave the result on res.locals.meta. A view that
+  // skipped it (e.g. the 500-error page, which renders ad hoc) still gets a sane fallback here.
+  const meta = (typeof locals !== 'undefined' && locals.meta) ? locals.meta : seo.pageMeta(site, { path, page: typeof page !== 'undefined' ? page : '', title: typeof title !== 'undefined' ? title : '', description: typeof description !== 'undefined' ? description : '' });
   const fontsHref = h.fontsHref(t);
   const radius = t.buttonStyle === 'pill' ? '9999px' : (t.buttonStyle === 'none' ? '0px' : '0.5rem');
 %><!DOCTYPE html>
@@ -11,15 +10,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= h.siteTitle(site, pageTitle) %></title>
-  <meta name="description" content="<%= desc %>">
-  <% if (siteUrl) { %><link rel="canonical" href="<%= siteUrl + (path === '/' ? '/' : path) %>"><% } %>
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="<%= h.siteTitle(site, pageTitle) %>">
-  <meta property="og:description" content="<%= desc %>">
-  <% if (ogImage) { %><meta property="og:image" content="<%= absolute(ogImage) %>"><% } %>
-  <meta name="twitter:card" content="summary_large_image">
-  <% if (seo.favicon) { %><link rel="icon" href="<%= seo.favicon %>"><% } else { %><link rel="icon" href="/img/favicon.svg" type="image/svg+xml"><% } %>
+  <%- seo.renderHead(meta) %>
   <% if (fontsHref) { %>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,19 +48,8 @@
   </style>
   <link rel="stylesheet" href="/css/site.css?v=1">
   <% if (t.customCss) { %><style id="custom-css"><%- t.customCss %></style><% } %>
-  <% if (seo.customHeadHtml) { %><%- seo.customHeadHtml %><% } %>
-  <script type="application/ld+json"><%- JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'Hotel',
-    name: h.fullName(g),
-    description: desc,
-    telephone: g.phone || undefined,
-    email: g.email || undefined,
-    url: siteUrl || undefined,
-    image: ogImage ? absolute(ogImage) : undefined,
-    address: g.address && g.address.street ? { '@type': 'PostalAddress', streetAddress: g.address.street, addressLocality: g.address.city, addressRegion: g.address.state, postalCode: g.address.zip, addressCountry: g.address.country || 'US' } : undefined,
-    checkinTime: g.checkInTime || undefined,
-    checkoutTime: g.checkOutTime || undefined,
-  }) %></script>
+  <%- seo.renderJsonLd(site, { path, page: typeof page !== 'undefined' ? page : '', title: typeof title !== 'undefined' ? title : '', room: typeof room !== 'undefined' ? room : undefined, base: meta.base }) %>
+  <%- seo.renderAnalyticsHead(site) %>
 </head>
 <body class="font-body text-gray-800 bg-white antialiased">
+  <%- seo.renderBodyStart(site) %>

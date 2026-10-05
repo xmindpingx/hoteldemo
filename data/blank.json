@@ -53,7 +53,127 @@
     "description": "",
     "ogImage": "",
     "favicon": "",
-    "customHeadHtml": ""
+    "customHeadHtml": "",
+    "siteUrl": "",
+    "category": "",
+    "keyAmenity": "",
+    "homeTitleTemplate": "{hotel} – {city}, {state}",
+    "pageTitleTemplate": "{page} | {hotel}",
+    "keywords": [],
+    "metaKeywords": false,
+    "pages": {
+      "home": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "suites": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "amenities": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "dining": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "area": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "gallery": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "reviews": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      },
+      "contact": {
+        "title": "",
+        "description": "",
+        "ogImage": "",
+        "noindex": false
+      }
+    },
+    "social": {
+      "ogType": "website",
+      "ogLocale": "en_US",
+      "twitterCard": "summary_large_image",
+      "twitterSite": "",
+      "fbAppId": ""
+    },
+    "schema": {
+      "enabled": true,
+      "type": "Hotel",
+      "priceRange": "",
+      "petsAllowed": "",
+      "openingHours": "",
+      "paymentAccepted": "",
+      "numberOfRooms": 0,
+      "slogan": "",
+      "amenityFeatures": [],
+      "sameAs": [],
+      "googleBusinessUrl": "",
+      "faq": true,
+      "breadcrumbs": true,
+      "rooms": true,
+      "website": true,
+      "reviews": false
+    },
+    "local": {
+      "geoRegion": "",
+      "geoPlacename": "",
+      "serviceAreas": []
+    },
+    "robots": {
+      "index": true,
+      "follow": true,
+      "custom": ""
+    },
+    "sitemap": {
+      "enabled": true,
+      "includeRooms": true,
+      "changefreq": "weekly",
+      "priorityHome": 1,
+      "priorityPages": 0.8,
+      "priorityRooms": 0.7
+    },
+    "verification": {
+      "google": "",
+      "bing": "",
+      "pinterest": "",
+      "yandex": "",
+      "facebookDomain": ""
+    },
+    "analytics": {
+      "ga4": "",
+      "gtm": "",
+      "metaPixel": "",
+      "clarity": "",
+      "bodyEndHtml": ""
+    },
+    "redirects": [],
+    "hosting": {
+      "forceHttps": false,
+      "enforceCanonicalHost": false,
+      "trailingSlashRedirect": true
+    }
   },
   "nav": [
     {
