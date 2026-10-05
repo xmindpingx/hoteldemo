@@ -34,7 +34,9 @@
       "enabled": true,
       "text": "Weekly & monthly rates · Full-size refrigerator & microwave in every suite · Office open 24 hours",
       "href": ""
-    }
+    },
+    "ratesNote": "Call for rates — (480) 969-5248 · Weekly and monthly rates available · Office open 24 hours",
+    "petPolicy": "Please contact the office before booking if you are traveling with a pet — (480) 969-5248."
   },
   "theme": {
     "primary": "#0f5c66",
@@ -54,16 +56,55 @@
     "customHeadHtml": ""
   },
   "nav": [
-    { "label": "Overview", "href": "/", "enabled": true },
-    { "label": "Suites", "href": "/suites", "enabled": true },
-    { "label": "Amenities", "href": "/amenities", "enabled": true },
-    { "label": "Dining", "href": "/dining", "enabled": true },
-    { "label": "Local Area", "href": "/area", "enabled": true },
-    { "label": "Gallery", "href": "/gallery", "enabled": true },
-    { "label": "Contact", "href": "/contact", "enabled": true }
+    {
+      "label": "Overview",
+      "href": "/",
+      "enabled": true
+    },
+    {
+      "label": "Suites",
+      "href": "/suites",
+      "enabled": true
+    },
+    {
+      "label": "Amenities",
+      "href": "/amenities",
+      "enabled": true
+    },
+    {
+      "label": "Dining",
+      "href": "/dining",
+      "enabled": true
+    },
+    {
+      "label": "Local Area",
+      "href": "/area",
+      "enabled": true
+    },
+    {
+      "label": "Gallery",
+      "href": "/gallery",
+      "enabled": true
+    },
+    {
+      "label": "Contact",
+      "href": "/contact",
+      "enabled": true
+    }
   ],
   "layout": {
-    "homeOrder": ["promotions", "overview", "rooms", "amenities", "dining", "area", "gallery", "reviews", "faq", "contact"]
+    "homeOrder": [
+      "promotions",
+      "overview",
+      "rooms",
+      "amenities",
+      "dining",
+      "area",
+      "gallery",
+      "reviews",
+      "faq",
+      "contact"
+    ]
   },
   "hero": {
     "enabled": true,
@@ -77,9 +118,18 @@
     "showBookingBar": true,
     "slideInterval": 7,
     "images": [
-      { "url": "/img/property/courtyard.jpg", "alt": "Courtyard with pergola, teal posts and lawn at Budget Suites Extended Stay" },
-      { "url": "/img/property/suite-entrance.jpg", "alt": "Suite entrance with teal door and tiled awning" },
-      { "url": "/img/property/office.jpg", "alt": "Motel office with MOTEL sign" }
+      {
+        "url": "/img/property/courtyard.jpg",
+        "alt": "Courtyard with pergola, teal posts and lawn at Budget Suites Extended Stay"
+      },
+      {
+        "url": "/img/property/suite-entrance.jpg",
+        "alt": "Suite entrance with teal door and tiled awning"
+      },
+      {
+        "url": "/img/property/office.jpg",
+        "alt": "Motel office with MOTEL sign"
+      }
     ]
   },
   "promotions": {
@@ -129,20 +179,64 @@
     "image": "/img/property/suite-entrance.jpg",
     "imageAlt": "Suite entrance with teal door, tiled awning and covered parking",
     "highlights": [
-      { "icon": "calendar", "label": "Weekly & monthly rates", "note": "Extended-stay pricing" },
-      { "icon": "kitchen", "label": "Full-size fridge & microwave", "note": "In every suite" },
-      { "icon": "key", "label": "Private entrances", "note": "Ground-floor suites" },
-      { "icon": "parking", "label": "Covered parking", "note": "Space in front of each suite" },
-      { "icon": "leaf", "label": "Courtyard lawn & pergola", "note": "Shaded seating" },
-      { "icon": "clock", "label": "Office open 24 hours", "note": "Every day" },
-      { "icon": "tv", "label": "Flat-screen TV", "note": "In every suite" },
-      { "icon": "ac", "label": "Air conditioning & ceiling fans", "note": "Individually controlled" }
+      {
+        "icon": "calendar",
+        "label": "Weekly & monthly rates",
+        "note": "Extended-stay pricing"
+      },
+      {
+        "icon": "kitchen",
+        "label": "Full-size fridge & microwave",
+        "note": "In every suite"
+      },
+      {
+        "icon": "key",
+        "label": "Private entrances",
+        "note": "Ground-floor suites"
+      },
+      {
+        "icon": "parking",
+        "label": "Covered parking",
+        "note": "Space in front of each suite"
+      },
+      {
+        "icon": "leaf",
+        "label": "Courtyard lawn & pergola",
+        "note": "Shaded seating"
+      },
+      {
+        "icon": "clock",
+        "label": "Office open 24 hours",
+        "note": "Every day"
+      },
+      {
+        "icon": "tv",
+        "label": "Flat-screen TV",
+        "note": "In every suite"
+      },
+      {
+        "icon": "ac",
+        "label": "Air conditioning & ceiling fans",
+        "note": "Individually controlled"
+      }
     ],
     "stats": [
-      { "value": "24/7", "label": "Office hours" },
-      { "value": "Weekly", "label": "& monthly rates" },
-      { "value": "1", "label": "Story — no stairs" },
-      { "value": "32", "label": "Years in business" }
+      {
+        "value": "24/7",
+        "label": "Office hours"
+      },
+      {
+        "value": "Weekly",
+        "label": "& monthly rates"
+      },
+      {
+        "value": "1",
+        "label": "Story — no stairs"
+      },
+      {
+        "value": "32",
+        "label": "Years in business"
+      }
     ]
   },
   "rooms": {
@@ -156,7 +250,10 @@
         "name": "King Suite",
         "type": "Studio",
         "image": "/img/property/suite-king.jpg",
-        "images": ["/img/property/suite-king.jpg", "/img/property/suite-entrance.jpg"],
+        "images": [
+          "/img/property/suite-king.jpg",
+          "/img/property/suite-entrance.jpg"
+        ],
         "sqft": 0,
         "beds": "1 King",
         "sleeps": 2,
@@ -164,7 +261,16 @@
         "view": "Courtyard",
         "shortDescription": "King bed, seating area, full-size refrigerator and microwave, with your own entrance and parking space.",
         "description": "A ground-floor suite with a king bed, armchair, dresser and flat-screen TV. The kitchenette area includes a full-size refrigerator and microwave. Tile floors, wall air conditioning and a ceiling fan keep it cool, and the teal front door opens onto the courtyard with your covered parking space just outside.",
-        "features": ["1 King bed", "Full-size refrigerator", "Microwave", "Flat-screen TV", "Air conditioning & ceiling fan", "Private exterior entrance", "Covered parking space", "Tile floors"],
+        "features": [
+          "1 King bed",
+          "Full-size refrigerator",
+          "Microwave",
+          "Flat-screen TV",
+          "Air conditioning & ceiling fan",
+          "Private exterior entrance",
+          "Covered parking space",
+          "Tile floors"
+        ],
         "priceFrom": 0,
         "priceNote": "Call for nightly, weekly & monthly rates",
         "featured": true,
@@ -177,7 +283,10 @@
         "name": "Queen Suite",
         "type": "Studio",
         "image": "/img/property/suite-queen.jpg",
-        "images": ["/img/property/suite-queen.jpg", "/img/property/suite-entrance.jpg"],
+        "images": [
+          "/img/property/suite-queen.jpg",
+          "/img/property/suite-entrance.jpg"
+        ],
         "sqft": 0,
         "beds": "1 Queen",
         "sleeps": 2,
@@ -185,7 +294,16 @@
         "view": "Courtyard",
         "shortDescription": "Queen bed, dresser and wall-mounted TV with a full-size refrigerator and microwave.",
         "description": "A ground-floor suite with a queen bed, nightstand, dresser and wall-mounted flat-screen TV. Includes a full-size refrigerator and microwave, wall air conditioning, a ceiling fan and tile floors, with a private entrance and covered parking in front.",
-        "features": ["1 Queen bed", "Full-size refrigerator", "Microwave", "Wall-mounted flat-screen TV", "Air conditioning & ceiling fan", "Private exterior entrance", "Covered parking space", "Tile floors"],
+        "features": [
+          "1 Queen bed",
+          "Full-size refrigerator",
+          "Microwave",
+          "Wall-mounted flat-screen TV",
+          "Air conditioning & ceiling fan",
+          "Private exterior entrance",
+          "Covered parking space",
+          "Tile floors"
+        ],
         "priceFrom": 0,
         "priceNote": "Call for nightly, weekly & monthly rates",
         "featured": true,
@@ -198,7 +316,10 @@
         "name": "One-Bedroom Suite",
         "type": "One Bedroom",
         "image": "/img/property/suite-entrance.jpg",
-        "images": ["/img/property/suite-entrance.jpg", "/img/property/courtyard.jpg"],
+        "images": [
+          "/img/property/suite-entrance.jpg",
+          "/img/property/courtyard.jpg"
+        ],
         "sqft": 0,
         "beds": "1 Bed + living area",
         "sleeps": 2,
@@ -206,7 +327,15 @@
         "view": "Courtyard",
         "shortDescription": "A separate bedroom and living area for longer stays. Ask the office about availability.",
         "description": "Our one-bedroom layout adds a separate living area to the bedroom, with the same full-size refrigerator, microwave, flat-screen TV, air conditioning and private entrance. Availability is limited — please call the office to reserve. (Placeholder photo: replace with a photo of the one-bedroom suite from the admin panel.)",
-        "features": ["Separate bedroom & living area", "Full-size refrigerator", "Microwave", "Flat-screen TV", "Air conditioning & ceiling fan", "Private exterior entrance", "Covered parking space"],
+        "features": [
+          "Separate bedroom & living area",
+          "Full-size refrigerator",
+          "Microwave",
+          "Flat-screen TV",
+          "Air conditioning & ceiling fan",
+          "Private exterior entrance",
+          "Covered parking space"
+        ],
         "priceFrom": 0,
         "priceNote": "Call for weekly & monthly rates",
         "featured": false,
@@ -253,17 +382,44 @@
       {
         "id": "cat-property",
         "name": "Property",
-        "items": ["Office open 24 hours", "Weekly & monthly extended-stay rates", "Courtyard with large grassy lawn", "Shaded pergola & outdoor seating", "Covered parking space at each suite", "Single-story — no stairs", "Near the Country Club Dr/Main St light-rail station"]
+        "items": [
+          "Office open 24 hours",
+          "Weekly & monthly extended-stay rates",
+          "Courtyard with large grassy lawn",
+          "Shaded pergola & outdoor seating",
+          "Covered parking space at each suite",
+          "Single-story — no stairs",
+          "Near the Country Club Dr/Main St light-rail station"
+        ]
       },
       {
         "id": "cat-suite",
         "name": "In Every Suite",
-        "items": ["Full-size refrigerator", "Microwave", "Flat-screen TV", "Air conditioning", "Ceiling fan", "Private exterior entrance", "Tile floors", "Dresser & seating"]
+        "items": [
+          "Full-size refrigerator",
+          "Microwave",
+          "Flat-screen TV",
+          "Air conditioning",
+          "Ceiling fan",
+          "Private exterior entrance",
+          "Tile floors",
+          "Dresser & seating"
+        ]
       }
     ],
     "policies": [
-      { "id": "pol-rates", "anchor": "rates", "title": "Rates & Deposits", "text": "Nightly, weekly and monthly rates are available. Please call the office at (480) 969-5248 for current pricing, deposit requirements and accepted payment methods." },
-      { "id": "pol-pets", "anchor": "pets", "title": "Pet Policy", "text": "Please contact the office before booking if you are traveling with a pet. (Placeholder — update this policy from the admin panel.)" }
+      {
+        "id": "pol-rates",
+        "anchor": "rates",
+        "title": "Rates & Deposits",
+        "text": "Nightly, weekly and monthly rates are available. Please call the office at (480) 969-5248 for current pricing, deposit requirements and accepted payment methods."
+      },
+      {
+        "id": "pol-pets",
+        "anchor": "pets",
+        "title": "Pet Policy",
+        "text": "Please contact the office before booking if you are traveling with a pet. (Placeholder — update this policy from the admin panel.)"
+      }
     ]
   },
   "dining": {
@@ -282,9 +438,30 @@
       }
     ],
     "nearby": [
-      { "id": "near-taquitos", "name": "Taquitos Jalisco", "cuisine": "Mexican · taqueria", "distance": "", "note": "Neighboring taqueria on Country Club Drive.", "url": "" },
-      { "id": "near-organstop", "name": "Organ Stop Pizza", "cuisine": "Pizza · family dining", "distance": "", "note": "Mesa landmark known for its Wurlitzer theatre organ shows.", "url": "" },
-      { "id": "near-goldencorral", "name": "Golden Corral Buffet & Grill", "cuisine": "American buffet", "distance": "", "note": "On Country Club Drive near the US-60.", "url": "" }
+      {
+        "id": "near-taquitos",
+        "name": "Taquitos Jalisco",
+        "cuisine": "Mexican · taqueria",
+        "distance": "",
+        "note": "Neighboring taqueria on Country Club Drive.",
+        "url": ""
+      },
+      {
+        "id": "near-organstop",
+        "name": "Organ Stop Pizza",
+        "cuisine": "Pizza · family dining",
+        "distance": "",
+        "note": "Mesa landmark known for its Wurlitzer theatre organ shows.",
+        "url": ""
+      },
+      {
+        "id": "near-goldencorral",
+        "name": "Golden Corral Buffet & Grill",
+        "cuisine": "American buffet",
+        "distance": "",
+        "note": "On Country Club Drive near the US-60.",
+        "url": ""
+      }
     ]
   },
   "area": {
@@ -295,31 +472,189 @@
     "mapEmbedUrl": "",
     "latitude": 33.4045912,
     "longitude": -111.8389668,
-    "categories": ["Shopping & Dining", "Arts & Culture", "Family", "Sports & Recreation", "Outdoors", "Golf", "Education"],
+    "categories": [
+      "Shopping & Dining",
+      "Arts & Culture",
+      "Family",
+      "Sports & Recreation",
+      "Outdoors",
+      "Golf",
+      "Education"
+    ],
     "attractions": [
-      { "id": "att-downtown", "name": "Downtown Mesa & Main Street", "category": "Shopping & Dining", "description": "Restaurants, shops, public art and the Valley Metro light rail along Main Street, just north of the motel.", "distance": "", "image": "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-naturalhistory", "name": "Arizona Museum of Natural History", "category": "Family", "description": "Mesa's natural-history museum on North Macdonald, known for its dinosaur exhibits.", "distance": "", "image": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-pioneer", "name": "Pioneer Park", "category": "Family", "description": "City park on Main Street in downtown Mesa with a large playground.", "distance": "", "image": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-artscenter", "name": "Mesa Arts Center", "category": "Arts & Culture", "description": "Downtown Mesa's performing- and visual-arts complex with theaters, galleries and studios.", "distance": "", "image": "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-idea", "name": "i.d.e.a. Museum", "category": "Family", "description": "Hands-on children's museum in downtown Mesa centered on art and imagination.", "distance": "", "image": "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-golfland", "name": "Golfland Sunsplash", "category": "Family", "description": "Water park, miniature golf and arcade on Country Club Drive, south of the motel.", "distance": "", "image": "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-sloan", "name": "Sloan Park", "category": "Sports & Recreation", "description": "Spring-training home of the Chicago Cubs, hosting Cactus League games each February and March.", "distance": "", "image": "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-riverview", "name": "Mesa Riverview", "category": "Shopping & Dining", "description": "Open-air shopping and dining center next to Sloan Park and Riverview Park.", "distance": "", "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-usery", "name": "Usery Mountain Regional Park", "category": "Outdoors", "description": "Maricopa County park at the edge of the Tonto National Forest with hiking and mountain-biking trails, including the Wind Cave Trail.", "distance": "", "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-lostdutchman", "name": "Lost Dutchman State Park", "category": "Outdoors", "description": "State park at the base of the Superstition Mountains in Apache Junction, with trails and desert views.", "distance": "", "image": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-saguarolake", "name": "Saguaro Lake", "category": "Outdoors", "description": "Reservoir on the Salt River in the Tonto National Forest, popular for boating, fishing and kayaking.", "distance": "", "image": "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-asu", "name": "Arizona State University", "category": "Education", "description": "ASU's Polytechnic campus is in Mesa; the main Tempe campus and Mill Avenue district are in neighboring Tempe.", "distance": "", "image": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-longbow", "name": "Longbow Golf Club", "category": "Golf", "description": "Public golf course in Mesa.", "distance": "", "image": "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true },
-      { "id": "att-roadtrip", "name": "Arizona Day Trips", "category": "Outdoors", "description": "The Apache Trail, Tonto National Forest and the Sonoran Desert are all within reach for a day on the road.", "distance": "", "image": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=70", "url": "", "enabled": true }
+      {
+        "id": "att-downtown",
+        "name": "Downtown Mesa & Main Street",
+        "category": "Shopping & Dining",
+        "description": "Restaurants, shops, public art and the Valley Metro light rail along Main Street, just north of the motel.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-naturalhistory",
+        "name": "Arizona Museum of Natural History",
+        "category": "Family",
+        "description": "Mesa's natural-history museum on North Macdonald, known for its dinosaur exhibits.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-pioneer",
+        "name": "Pioneer Park",
+        "category": "Family",
+        "description": "City park on Main Street in downtown Mesa with a large playground.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-artscenter",
+        "name": "Mesa Arts Center",
+        "category": "Arts & Culture",
+        "description": "Downtown Mesa's performing- and visual-arts complex with theaters, galleries and studios.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-idea",
+        "name": "i.d.e.a. Museum",
+        "category": "Family",
+        "description": "Hands-on children's museum in downtown Mesa centered on art and imagination.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-golfland",
+        "name": "Golfland Sunsplash",
+        "category": "Family",
+        "description": "Water park, miniature golf and arcade on Country Club Drive, south of the motel.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-sloan",
+        "name": "Sloan Park",
+        "category": "Sports & Recreation",
+        "description": "Spring-training home of the Chicago Cubs, hosting Cactus League games each February and March.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-riverview",
+        "name": "Mesa Riverview",
+        "category": "Shopping & Dining",
+        "description": "Open-air shopping and dining center next to Sloan Park and Riverview Park.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-usery",
+        "name": "Usery Mountain Regional Park",
+        "category": "Outdoors",
+        "description": "Maricopa County park at the edge of the Tonto National Forest with hiking and mountain-biking trails, including the Wind Cave Trail.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-lostdutchman",
+        "name": "Lost Dutchman State Park",
+        "category": "Outdoors",
+        "description": "State park at the base of the Superstition Mountains in Apache Junction, with trails and desert views.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-saguarolake",
+        "name": "Saguaro Lake",
+        "category": "Outdoors",
+        "description": "Reservoir on the Salt River in the Tonto National Forest, popular for boating, fishing and kayaking.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-asu",
+        "name": "Arizona State University",
+        "category": "Education",
+        "description": "ASU's Polytechnic campus is in Mesa; the main Tempe campus and Mill Avenue district are in neighboring Tempe.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-longbow",
+        "name": "Longbow Golf Club",
+        "category": "Golf",
+        "description": "Public golf course in Mesa.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      },
+      {
+        "id": "att-roadtrip",
+        "name": "Arizona Day Trips",
+        "category": "Outdoors",
+        "description": "The Apache Trail, Tonto National Forest and the Sonoran Desert are all within reach for a day on the road.",
+        "distance": "",
+        "image": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=70",
+        "url": "",
+        "enabled": true
+      }
     ],
     "airports": [
-      { "id": "apt-phx", "name": "Phoenix Sky Harbor International Airport", "code": "PHX", "distance": "", "note": "The Phoenix metro's main international airport." },
-      { "id": "apt-aza", "name": "Phoenix–Mesa Gateway Airport", "code": "AZA", "distance": "", "note": "Mesa's commercial airport, served by several low-cost carriers." }
+      {
+        "id": "apt-phx",
+        "name": "Phoenix Sky Harbor International Airport",
+        "code": "PHX",
+        "distance": "",
+        "note": "The Phoenix metro's main international airport."
+      },
+      {
+        "id": "apt-aza",
+        "name": "Phoenix–Mesa Gateway Airport",
+        "code": "AZA",
+        "distance": "",
+        "note": "Mesa's commercial airport, served by several low-cost carriers."
+      }
     ],
     "transport": [
-      { "id": "tr-lightrail", "name": "Valley Metro Light Rail", "note": "The Country Club Dr/Main St station is just north of the motel; the line continues to Tempe and Phoenix." },
-      { "id": "tr-highways", "name": "Highways", "note": "Country Club Drive is AZ-87, with the US-60 (Superstition Freeway) a short drive south." },
-      { "id": "tr-parking", "name": "Covered parking", "note": "A covered parking space in front of each suite." }
+      {
+        "id": "tr-lightrail",
+        "name": "Valley Metro Light Rail",
+        "note": "The Country Club Dr/Main St station is just north of the motel; the line continues to Tempe and Phoenix."
+      },
+      {
+        "id": "tr-highways",
+        "name": "Highways",
+        "note": "Country Club Drive is AZ-87, with the US-60 (Superstition Freeway) a short drive south."
+      },
+      {
+        "id": "tr-parking",
+        "name": "Covered parking",
+        "note": "A covered parking space in front of each suite."
+      }
     ]
   },
   "gallery": {
@@ -327,11 +662,36 @@
     "heading": "Photos",
     "intro": "Upload full-resolution photos from the admin panel to replace these.",
     "items": [
-      { "id": "g1", "image": "/img/property/courtyard.jpg", "caption": "Courtyard, pergola and lawn", "category": "Property" },
-      { "id": "g2", "image": "/img/property/suite-entrance.jpg", "caption": "Suite entrance", "category": "Property" },
-      { "id": "g3", "image": "/img/property/office.jpg", "caption": "Office — open 24 hours", "category": "Property" },
-      { "id": "g4", "image": "/img/property/suite-king.jpg", "caption": "King Suite", "category": "Suites" },
-      { "id": "g5", "image": "/img/property/suite-queen.jpg", "caption": "Queen Suite", "category": "Suites" }
+      {
+        "id": "g1",
+        "image": "/img/property/courtyard.jpg",
+        "caption": "Courtyard, pergola and lawn",
+        "category": "Property"
+      },
+      {
+        "id": "g2",
+        "image": "/img/property/suite-entrance.jpg",
+        "caption": "Suite entrance",
+        "category": "Property"
+      },
+      {
+        "id": "g3",
+        "image": "/img/property/office.jpg",
+        "caption": "Office — open 24 hours",
+        "category": "Property"
+      },
+      {
+        "id": "g4",
+        "image": "/img/property/suite-king.jpg",
+        "caption": "King Suite",
+        "category": "Suites"
+      },
+      {
+        "id": "g5",
+        "image": "/img/property/suite-queen.jpg",
+        "caption": "Queen Suite",
+        "category": "Suites"
+      }
     ]
   },
   "reviews": {
@@ -344,11 +704,31 @@
     "enabled": true,
     "heading": "Good to Know",
     "items": [
-      { "id": "faq-rates", "q": "Do you offer weekly or monthly rates?", "a": "Yes. We offer nightly stays as well as weekly and monthly extended-stay rates. Call the office at (480) 969-5248 for current pricing and deposit details." },
-      { "id": "faq-kitchen", "q": "Do the suites have kitchens?", "a": "Every suite has a full-size refrigerator and a microwave." },
-      { "id": "faq-parking", "q": "Is parking available?", "a": "Yes — each suite has a covered parking space right in front of its entrance." },
-      { "id": "faq-office", "q": "What are the office hours?", "a": "The office is open 24 hours a day, every day." },
-      { "id": "faq-location", "q": "Where are you located?", "a": "537 S Country Club Dr, Mesa, AZ 85210 — on Country Club Drive (AZ-87) just south of Main Street, between downtown Mesa and the US-60." }
+      {
+        "id": "faq-rates",
+        "q": "Do you offer weekly or monthly rates?",
+        "a": "Yes. We offer nightly stays as well as weekly and monthly extended-stay rates. Call the office at (480) 969-5248 for current pricing and deposit details."
+      },
+      {
+        "id": "faq-kitchen",
+        "q": "Do the suites have kitchens?",
+        "a": "Every suite has a full-size refrigerator and a microwave."
+      },
+      {
+        "id": "faq-parking",
+        "q": "Is parking available?",
+        "a": "Yes — each suite has a covered parking space right in front of its entrance."
+      },
+      {
+        "id": "faq-office",
+        "q": "What are the office hours?",
+        "a": "The office is open 24 hours a day, every day."
+      },
+      {
+        "id": "faq-location",
+        "q": "Where are you located?",
+        "a": "537 S Country Club Dr, Mesa, AZ 85210 — on Country Club Drive (AZ-87) just south of Main Street, between downtown Mesa and the US-60."
+      }
     ]
   },
   "contact": {
@@ -364,12 +744,30 @@
   "footer": {
     "about": "Budget Suites Extended Stay is a single-story extended-stay motel at 537 S Country Club Dr in Mesa, Arizona, offering nightly, weekly and monthly rates with a full-size refrigerator and microwave in every suite.",
     "links": [
-      { "label": "Suites", "href": "/suites" },
-      { "label": "Amenities", "href": "/amenities" },
-      { "label": "Dining", "href": "/dining" },
-      { "label": "Local Area", "href": "/area" },
-      { "label": "Gallery", "href": "/gallery" },
-      { "label": "Contact", "href": "/contact" }
+      {
+        "label": "Suites",
+        "href": "/suites"
+      },
+      {
+        "label": "Amenities",
+        "href": "/amenities"
+      },
+      {
+        "label": "Dining",
+        "href": "/dining"
+      },
+      {
+        "label": "Local Area",
+        "href": "/area"
+      },
+      {
+        "label": "Gallery",
+        "href": "/gallery"
+      },
+      {
+        "label": "Contact",
+        "href": "/contact"
+      }
     ],
     "social": [],
     "copyright": "© {year} Budget Suites Extended Stay. All rights reserved.",

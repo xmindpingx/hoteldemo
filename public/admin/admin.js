@@ -156,6 +156,12 @@
         { type: 'row', fields: [F.text('text', 'Text'), F.text('href', 'Link (optional)')] },
       ]),
     ] },
+    { id: 'rates', title: 'Rates & Policies', icon: 'tag', group: 'Site', path: ['general'], fields: [
+      { type: 'note', html: 'Quick access to rates, check-in/out times and pet policy. Room-level rates are set under <strong>Suites &amp; Rooms</strong> for each room.' },
+      { type: 'row', fields: [F.text('checkInTime', 'Check-in time', { help: 'e.g. 3:00 PM — leave blank to hide' }), F.text('checkOutTime', 'Check-out time', { help: 'e.g. 11:00 AM — leave blank to hide' })] },
+      F.text('ratesNote', 'Rates note / summary', { help: 'Displayed on the contact and booking pages.' }),
+      F.area('petPolicy', 'Pet policy', { help: 'Displayed in the Amenities section. Leave blank to hide.' }),
+    ] },
     { id: 'theme', title: 'Theme & Fonts', icon: 'palette', group: 'Site', path: ['theme'], fields: [
       { type: 'row', fields: [F.color('primary', 'Primary color', { help: 'Header accents, buttons, footer' }), F.color('accent', 'Accent color', { help: 'Highlights, call-to-action buttons' })] },
       { type: 'row', fields: [F.sel('headingFont', 'Heading font', 'fonts'), F.sel('bodyFont', 'Body font', 'fonts')] },

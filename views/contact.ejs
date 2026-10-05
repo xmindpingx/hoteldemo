@@ -58,6 +58,7 @@
         <% if (g.phone) { %><li class="flex gap-3"><%- icon('phone', 'w-5 h-5 text-accent shrink-0') %><a href="<%= h.telHref(g.phone) %>" class="hover:text-brand"><%= g.phone %></a></li><% } %>
         <% if (g.email) { %><li class="flex gap-3"><%- icon('mail', 'w-5 h-5 text-accent shrink-0') %><a href="mailto:<%= g.email %>" class="hover:text-brand break-all"><%= g.email %></a></li><% } %>
         <% if (c.hours) { %><li class="flex gap-3"><%- icon('clock', 'w-5 h-5 text-accent shrink-0') %><span><%= c.hours %></span></li><% } %>
+        <% if (g.ratesNote) { %><li class="flex gap-3"><%- icon('tag', 'w-5 h-5 text-accent shrink-0') %><span><%= g.ratesNote %></span></li><% } %>
         <% if (g.checkInTime || g.checkOutTime) { %><li class="flex gap-3"><%- icon('key', 'w-5 h-5 text-accent shrink-0') %><span><% if (g.checkInTime) { %>Check-in <%= g.checkInTime %><% } %><% if (g.checkInTime && g.checkOutTime) { %> · <% } %><% if (g.checkOutTime) { %>Check-out <%= g.checkOutTime %><% } %></span></li><% } %>
       </ul>
     </div>

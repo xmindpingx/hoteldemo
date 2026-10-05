@@ -4,6 +4,8 @@
   const featured = (a.featured || []).filter((x) => x && x.title);
   const categories = (a.categories || []).filter((c) => c && c.name && (c.items || []).length);
   const policies = (a.policies || []).filter((p) => p && p.title);
+  const g_pet = site.general.petPolicy;
+  const hasPetPolicy = policies.some((p) => /pet/i.test(p.title) || p.anchor === 'pets');
   if (a.enabled !== false && (featured.length || categories.length || a.heading)) {
 %>
 <section class="max-w-page mx-auto px-4 py-16 lg:py-24" id="amenities">
@@ -43,7 +45,7 @@
   </div>
   <% } %>
 
-  <% if (!_compact && policies.length) { %>
+  <% if (!_compact && (policies.length || (g_pet && !hasPetPolicy))) { %>
   <div class="mt-14">
     <h3 class="font-heading text-2xl text-gray-900 mb-6">Policies</h3>
     <div class="grid gap-6 md:grid-cols-3">
@@ -53,6 +55,12 @@
           <p class="mt-2 text-sm text-gray-600 leading-relaxed"><%- h.nl2br(p.text) %></p>
         </div>
       <% }) %>
+      <% if (g_pet && !hasPetPolicy) { %>
+        <div id="pets" class="rounded-2xl ring-1 ring-black/5 p-6 bg-white scroll-mt-28">
+          <h4 class="font-semibold text-gray-900">Pet Policy</h4>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed"><%- h.nl2br(g_pet) %></p>
+        </div>
+      <% } %>
     </div>
   </div>
   <% } %>

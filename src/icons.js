@@ -72,6 +72,7 @@ const ICONS = {
   save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
   eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
   lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  tag: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
   sliders: '<line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/>',
   inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
   database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
@@ -101,6 +102,6 @@ function icon(name, className = 'w-5 h-5', extra = '') {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="${className}" aria-hidden="true" ${extra}>${body}</svg>`;
 }
 
-const AMENITY_ICON_NAMES = ['pool', 'pet', 'breakfast', 'coffee', 'kitchen', 'wifi', 'parking', 'gym', 'laundry', 'business', 'shuttle', 'grill', 'court', 'accessible', 'tv', 'ac', 'key', 'leaf', 'bed', 'bath', 'shield', 'sparkles', 'sun', 'heart', 'baby', 'building', 'car', 'plane', 'train', 'shopping', 'palette', 'mountain', 'golf', 'education', 'ticket', 'family', 'check', 'star', 'phone', 'mail', 'map-pin', 'clock', 'calendar', 'users', 'info', 'globe'];
+const AMENITY_ICON_NAMES = ['pool', 'pet', 'breakfast', 'coffee', 'kitchen', 'wifi', 'parking', 'gym', 'laundry', 'business', 'shuttle', 'grill', 'court', 'accessible', 'tv', 'ac', 'key', 'leaf', 'bed', 'bath', 'shield', 'sparkles', 'sun', 'heart', 'baby', 'building', 'car', 'plane', 'train', 'shopping', 'palette', 'mountain', 'golf', 'education', 'ticket', 'family', 'check', 'star', 'phone', 'mail', 'map-pin', 'clock', 'calendar', 'users', 'info', 'globe', 'tag'];
 
 module.exports = { ICONS, icon, AMENITY_ICON_NAMES, SOCIAL_ALIASES };
