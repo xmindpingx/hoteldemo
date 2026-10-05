@@ -1,0 +1,36 @@
+# Keep these out of aider's repo map and /add (saves context tokens, protects secrets/live data).
+
+# dependencies & vendored runtime (tailwind-3.4.17.js is ~400 KB of minified JS)
+node_modules/
+public/vendor/
+package-lock.json
+
+# LIVE content, secrets, runtime files — edit these through /admin, never with aider
+data/site.json
+data/site.json.tmp
+data/inquiries.json
+data/inquiries.json.tmp
+data/admin.json
+data/.secret
+data/backups/
+.env
+.env.*
+!.env.example
+
+# binary assets
+public/uploads/
+public/img/property/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.woff
+*.woff2
+
+# aider's own state
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v4/
+.aider.llm.history

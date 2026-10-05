@@ -1,0 +1,34 @@
+# Project-level model settings for hoteldemosite. Loaded IN ADDITION to ~/.aider.model.settings.yml
+# (same model name here overrides the global entry).
+#
+# The default pair (gemma4:12b architect @24k ctx + qwen2.5-coder:7b editor @16k ctx) is defined
+# globally and was measured to fit together in 16 GB VRAM (~14.9 GB). Nothing to repeat here.
+#
+# Below: an OPTIONAL stronger-coder architect. qwen2.5-coder:14b weights are 9.0 GB (vs 8.0 GB
+# for gemma4:12b), so its context is kept at 16k to leave room for the 7b editor. This pairing has
+# NOT been measured on this machine — run `ollama ps` during a session; if only one model is
+# resident, drop num_ctx to 12288 here AND in .aider.model.metadata.json AND start_aider.sh.
+#
+#   aider-hoteldemo --model ollama_chat/qwen2.5-coder:14b
+
+- name: ollama_chat/qwen2.5-coder:14b
+  edit_format: diff
+  use_repo_map: true
+  editor_model_name: ollama_chat/qwen2.5-coder:7b-instruct
+  editor_edit_format: editor-diff
+  extra_params:
+    num_ctx: 16384
+    num_predict: 4096
+    temperature: 0.2
+    keep_alive: 30m
+
+- name: ollama/qwen2.5-coder:14b
+  edit_format: diff
+  use_repo_map: true
+  editor_model_name: ollama/qwen2.5-coder:7b-instruct
+  editor_edit_format: editor-diff
+  extra_params:
+    num_ctx: 16384
+    num_predict: 4096
+    temperature: 0.2
+    keep_alive: 30m

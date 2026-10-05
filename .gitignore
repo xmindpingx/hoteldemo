@@ -23,3 +23,15 @@ logs/
 .DS_Store
 .vscode/
 .idea/
+
+# aider state (config files .aider.conf.yml / .aider.model.* / .aiderignore ARE committed)
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v4/
+.aider.llm.history
+.aider*
+# aider adds .aider* itself; keep the four CONFIG files tracked anyway
+!.aider.conf.yml
+!.aider.model.settings.yml
+!.aider.model.metadata.json
+!.aiderignore
