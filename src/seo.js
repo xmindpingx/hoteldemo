@@ -392,6 +392,40 @@ function renderBodyEnd(site) {
 }
 
 // ---------------------------------------------------------------- robots & sitemap
+/**
+ * Parse robots.txt into user-agent groups: [{ agents: ['*'], rules: [['disallow','/'], ...] }].
+ * Needed because a proxy (Cloudflare's managed robots.txt) may prepend blocks for specific AI
+ * crawlers — a "Disallow: /" there only blocks that crawler, not search engines.
+ */
+function parseRobots(text) {
+  const groups = [];
+  let cur = null, lastWasAgent = false;
+  for (const raw of String(text || '').split(/\r?\n/)) {
+    const line = raw.replace(/#.*$/, '').trim();
+    if (!line) continue;
+    const m = line.match(/^([A-Za-z-]+)\s*:\s*(.*)$/);
+    if (!m) continue;
+    const key = m[1].toLowerCase(), val = m[2].trim();
+    if (key === 'user-agent') {
+      if (!cur || !lastWasAgent) { cur = { agents: [], rules: [] }; groups.push(cur); }
+      cur.agents.push(val.toLowerCase());
+      lastWasAgent = true;
+    } else {
+      lastWasAgent = false;
+      if (cur) cur.rules.push([key, val]);
+    }
+  }
+  return groups;
+}
+/** True when search engines in general (User-agent: *) are told Disallow: / */
+function robotsBlocksAll(text) {
+  return parseRobots(text).some((g) => g.agents.includes('*') && g.rules.some(([k, v]) => k === 'disallow' && v === '/'));
+}
+/** Names of specific crawlers that are fully blocked (e.g. Cloudflare's AI-bot list). */
+function robotsBlockedAgents(text) {
+  return [...new Set(parseRobots(text).filter((g) => !g.agents.includes('*') && g.rules.some(([k, v]) => k === 'disallow' && v === '/')).flatMap((g) => g.agents))];
+}
+
 function robotsTxt(site, req) {
   const seo = site.seo;
   if (str(seo.robots.custom)) return seo.robots.custom.replace(/\r\n/g, '\n').replace(/\n*$/, '\n');
@@ -650,7 +684,7 @@ async function audit(site, { port, base: baseOverride } = {}) {
 
     // robots & sitemap over HTTP
     const [rob, sm] = await Promise.all([fetchLocal(port, '/robots.txt', { host: hostOf(base) || 'localhost' }), fetchLocal(port, '/sitemap.xml', { host: hostOf(base) || 'localhost' })]);
-    const robBlocksAll = /^\s*Disallow:\s*\/\s*$/m.test(rob.body);
+    const robBlocksAll = robotsBlocksAll(rob.body);
     add('setup', { id: 'robotsTxt', weight: 3, status: rob.status === 200 ? (robBlocksAll ? 'fail' : 'pass') : 'fail', label: 'robots.txt reachable and not blocking the site', detail: rob.status === 200 ? (robBlocksAll ? 'robots.txt contains "Disallow: /" — the whole site is blocked.' : `${rob.body.trim().split('\n').length} lines · ${/Sitemap:/i.test(rob.body) ? 'references the sitemap' : 'no Sitemap: line (set the site URL)'}`) : `HTTP ${rob.status}`, step: 'search', field: 'robots.custom' });
     const urlCount = (sm.body.match(/<loc>/g) || []).length;
     add('setup', { id: 'sitemapXml', weight: 2, status: sm.status === 200 && urlCount ? 'pass' : 'fail', label: 'sitemap.xml reachable', detail: sm.status === 200 ? `${urlCount} URL(s) listed.` : `HTTP ${sm.status}`, step: 'search' });
@@ -682,4 +716,5 @@ module.exports = {
   baseUrl, absolute, templateVars, renderTemplate,
   pageMeta, renderHead, jsonLd, renderJsonLd, renderAnalyticsHead, renderBodyStart, renderBodyEnd,
   robotsTxt, sitemapEntries, sitemapXml, middleware, suggestions, audit, parseHtml,
+  parseRobots, robotsBlocksAll, robotsBlockedAgents,
 };

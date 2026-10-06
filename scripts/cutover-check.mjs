@@ -122,7 +122,9 @@ const hostOf = (u) => { try { return new URL(u).host.toLowerCase(); } catch (_) 
     const base = `https://${servedHost}`;
     const [rob, sm] = await Promise.all([fetchUrl(`${base}/robots.txt`), fetchUrl(`${base}/sitemap.xml`)]);
     const smLine = (rob.body.match(/^Sitemap:\s*(\S+)/mi) || [])[1] || '';
-    add(rob.status === 200 && !/^\s*Disallow:\s*\/\s*$/m.test(rob.body) ? 'pass' : 'fail', 'robots.txt reachable and not blocking', rob.status === 200 ? (smLine ? `Sitemap: ${smLine}` : 'no Sitemap: line') : `HTTP ${rob.status}`);
+    const blocksAll = seo.robotsBlocksAll(rob.body), blockedBots = seo.robotsBlockedAgents(rob.body);
+    add(rob.status === 200 && !blocksAll ? 'pass' : 'fail', 'robots.txt reachable and search engines allowed', rob.status === 200 ? (blocksAll ? '"User-agent: *" + "Disallow: /" — the whole site is hidden from search (SEO Wizard → Search Engines → indexing)' : (smLine ? `Sitemap: ${smLine}` : 'no Sitemap: line')) : `HTTP ${rob.status}`);
+    if (blockedBots.length) add('pass', `robots.txt blocks ${blockedBots.length} specific crawler(s) (added at the edge by Cloudflare's managed robots.txt, not by this app)`, `${blockedBots.slice(0, 6).join(', ')}${blockedBots.length > 6 ? ', …' : ''} — AI/data crawlers; Googlebot and Bingbot are not in the list, so search indexing is unaffected`);
     if (smLine) add(hostOf(smLine) === servedHost ? 'pass' : 'fail', 'robots.txt Sitemap line points at this domain', smLine);
     const locs = [...sm.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     add(sm.status === 200 && locs.length ? 'pass' : 'fail', 'sitemap.xml reachable', sm.status === 200 ? `${locs.length} URLs` : `HTTP ${sm.status}`);

@@ -86,6 +86,8 @@ Suggested cron (human installs with `crontab -e`):
 | Sitemap/canonical show the wrong domain | `node scripts/site-url.mjs` | set the right one: `node scripts/site-url.mjs https://<domain>` then `pm2 restart hoteldemo` |
 | Cannot log in to /admin, "Too many attempts" | — | login is rate-limited per IP for 15 minutes; wait, or restart the process to clear it |
 | Contact form submissions not arriving | `/admin` → Inquiries | nothing is emailed by design; submissions are stored in `data/inquiries.json` and shown there |
+| Public `robots.txt` shows ~30 `Disallow: /` blocks the app never wrote | `curl -s https://<host>/robots.txt` | normal: Cloudflare's managed robots.txt is prepended at the edge for AI crawlers only; `User-agent: *` still allows. Change it in the Cloudflare dashboard, not in code |
+| `http://` serves the page instead of redirecting to `https://` | `node scripts/cutover-check.mjs <host>` | turn on **Always Use HTTPS** in Cloudflare → SSL/TLS → Edge Certificates (or Force HTTPS in SEO Wizard → Hosting) |
 
 ## Security basics
 
