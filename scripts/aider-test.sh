@@ -13,6 +13,11 @@ for f in server.js src/*.js scripts/*.mjs public/js/*.js public/admin/*.js; do
   node --check "$f" || { echo "SYNTAX ERROR: $f"; fail=1; }
 done
 
+for f in scripts/*.sh start_aider.sh; do
+  [ -f "$f" ] || continue
+  bash -n "$f" || { echo "SHELL SYNTAX ERROR: $f"; fail=1; }
+done
+
 tmp=$(mktemp -d)
 DATA_DIR="$tmp" node -e "
   for (const m of ['./src/store','./src/auth','./src/helpers','./src/icons','./src/seo','./src/public','./src/admin']) require(m);

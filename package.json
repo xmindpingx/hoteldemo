@@ -9,7 +9,14 @@
     "dev": "node --watch server.js",
     "reset:mock": "node -e \"require('./src/store').resetSite('mock'); console.log('site.json restored to mock data')\"",
     "reset:blank": "node -e \"require('./src/store').resetSite('blank'); console.log('site.json wiped to blank template')\"",
-    "route:cloudflare": "node scripts/cloudflare-route.mjs"
+    "route:cloudflare": "node scripts/cloudflare-route.mjs",
+    "health": "bash scripts/health.sh",
+    "audit": "node scripts/seo-audit.mjs",
+    "backup": "bash scripts/backup.sh",
+    "deploy": "bash scripts/deploy.sh",
+    "cutover-check": "node scripts/cutover-check.mjs",
+    "site-url": "node scripts/site-url.mjs",
+    "test": "bash scripts/aider-test.sh"
   },
   "engines": {
     "node": ">=18"

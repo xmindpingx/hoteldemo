@@ -2,6 +2,12 @@
 
 Repo: `/home/dad/wwwhotel/hoteldemosite`. Everything you edit lives here. `README.md` (also in
 chat, read-only) describes the stack, routes, admin sections and file layout — do not restate it.
+`docs/OPERATIONS.md` (also read-only in chat) is the runbook: deploy loop, backups, troubleshooting,
+and the table of what you may run yourself versus hand to the human.
+
+On-demand references — ask the human to `/read` the one that matches the task before planning:
+- `docs/GODADDY-CUTOVER.md` — domain, DNS, GoDaddy, nameservers, Cloudflare, "go live", redirects from an old site.
+- `docs/SEO-ENGINE.md` — anything touching `src/seo.js`, the SEO Wizard, titles/descriptions, JSON-LD, sitemap, the audit.
 
 ## What this is
 
@@ -19,7 +25,10 @@ No database, no build step, no bundler. Dependencies: express, ejs, multer, comp
    `/admin`; defaults are edited in `data/defaults.json`, `data/blank.json`, `data/samples/*.json`.
 3. Never run `pm2`, `sudo`, `systemctl`, `npm install`, `git push`, or `rm -rf`. When a change
    needs one of those (new dependency, restart), finish the edit and then tell the human the exact
-   command — e.g. `pm2 restart hoteldemo`.
+   command — normally `bash scripts/deploy.sh --local` (backs up, tests, restarts, health-checks).
+   Read-only scripts you MAY run with `/run`: `bash scripts/aider-test.sh`, `bash scripts/health.sh --quick`,
+   `node scripts/seo-audit.mjs`, `node scripts/cutover-check.mjs <domain>`. Everything else in
+   `scripts/` (deploy, backup, site-url, cloudflare-route) changes live state: human only.
 4. No new npm dependencies without asking first. Prefer the Node standard library and the five
    packages already in `package.json`.
 5. No placeholders (`path/to/file`, `TODO: fill in`, `<YOUR_...>`) in files you write. Use the real
@@ -41,7 +50,10 @@ No database, no build step, no bundler. Dependencies: express, ejs, multer, comp
   `public/admin/admin.js`, then render it in the view. List those four places in your plan.
 - Keep `src/auth.js` behavior intact: passphrase check, HMAC cookie, rate limit, CSRF header guard.
   Every `/admin` page and `/admin/api/*` route (except login) must stay behind `auth.requireAdmin`.
-- SEO lives in `src/seo.js` (685 lines). Add to it rather than scattering `<meta>` logic in views.
+- SEO lives in `src/seo.js`. Add to it rather than scattering `<meta>` logic in views. Its constants
+  are mirrored in `public/admin/admin.js` (`SEO_*`) — change both in the same commit (`docs/SEO-ENGINE.md`).
+- Never invent facts for the site: no made-up ratings, review counts, statistics, awards, distances
+  or amenities in defaults, suggestions, schema or copy. Use what `site.json` already says, or ask.
 
 ## Views (`views/**/*.ejs`)
 
@@ -83,6 +95,9 @@ No database, no build step, no bundler. Dependencies: express, ejs, multer, comp
 
 ## When planning (architect mode)
 
+0. Read-only first: if the task is "is it working / why is it broken / how is SEO", run the matching
+   read-only script (`health.sh --quick`, `seo-audit.mjs`, `cutover-check.mjs`) and reason from its
+   output instead of guessing.
 1. Name every file you will touch and why, before any edit.
 2. Flag separately anything that needs a manual step: `pm2 restart`, `npm install`, a Cloudflare
    change (`node scripts/cloudflare-route.mjs ...`), or deleting runtime data.

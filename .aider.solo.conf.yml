@@ -10,6 +10,8 @@ edit-format: diff
 read:
   - CONVENTIONS.md
   - README.md
+  - docs/OPERATIONS.md
+# On demand (ask aider to plan after you /read one): docs/GODADDY-CUTOVER.md, docs/SEO-ENGINE.md
 
 # ---- repo map: small, so prompts fit in the 24k architect window -----------------------
 map-tokens: 1536
@@ -20,6 +22,7 @@ map-refresh: auto
 auto-lint: true
 lint-cmd:
   - "javascript: node --check"
+  - "bash: bash -n"
 # /test = syntax-check the whole server + confirm the data store loads. Never restarts pm2.
 test-cmd: "bash scripts/aider-test.sh"
 auto-test: false
@@ -34,3 +37,8 @@ attribute-committer: true
 dark-mode: true
 pretty: true
 stream: true
+check-update: false            # offline box; do not phone home for aider updates on every launch
+show-model-warnings: false     # local Ollama models are not in aider's catalog; the warning is noise
+suggest-shell-commands: true   # let the model propose e.g. `node scripts/seo-audit.mjs` — still y/n gated
+# Commit messages: reuse the solo model (a second model would not fit in VRAM next to the 14b).
+weak-model: ollama_chat/qwen2.5-coder:14b

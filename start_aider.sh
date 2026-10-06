@@ -4,8 +4,11 @@
 #   ./start_aider.sh                                  # normal
 #   ./start_aider.sh --model ollama_chat/gemma4:e4b          # smaller/faster architect
 #   ./start_aider.sh --model ollama_chat/qwen2.5-coder:14b   # stronger coder SOLO @24k (no architect; 14b+7b don't fit together)
+#   ./start_aider.sh --no-wait                               # launch even if another app holds the GPU
+#   GPU_WAIT_MAX=600 ./start_aider.sh                        # wait at most 10 min for the GPU (default 30)
 #
-# What it does: activates the venv, checks Ollama/models/.env, pre-loads BOTH models into
+# What it does: activates the venv, checks Ollama/models/.env, WAITS for the GPU to be free if
+# something else (ComfyUI, LM Studio, another model) is using it, pre-loads BOTH models into
 # VRAM (editor first, then architect, so they stay resident together), runs aider, and
 # unloads the models on exit so the GPU is free for other apps.
 set -uo pipefail
@@ -54,11 +57,54 @@ if [ -f .git/index.lock ]; then
   warn ".git/index.lock exists (stale lock from an interrupted git run). Removing it."
   rm -f .git/index.lock
 fi
-if command -v rocm-smi >/dev/null 2>&1; then
+# ---- wait for the GPU to be free ---------------------------------------------------------
+# Both aider models need ~14.9 GB of the 16 GB together. If something else (ComfyUI, LM Studio,
+# another Ollama model) holds VRAM, wait for it to finish instead of launching into a swap-fest.
+# Env knobs: GPU_WAIT_MAX=seconds (default 1800 = 30 min, 0 = don't wait), GPU_FREE_THRESHOLD_MIB
+# (default 2200: anything above this is "someone else is using the GPU"). Pass --no-wait to skip.
+GPU_WAIT_MAX=${GPU_WAIT_MAX:-1800}
+GPU_FREE_THRESHOLD_MIB=${GPU_FREE_THRESHOLD_MIB:-2200}
+_args=()
+for a in "$@"; do if [ "$a" = "--no-wait" ]; then GPU_WAIT_MAX=0; else _args+=("$a"); fi; done
+set -- "${_args[@]+"${_args[@]}"}"   # aider does not know --no-wait; drop it before passing args on
+
+vram_used_mib() {  # prints MiB of VRAM in use, or nothing if it cannot be measured
+  local used
   used=$(rocm-smi --showmeminfo vram 2>/dev/null | grep "Used" | grep -oE "[0-9]+$")
-  if [ -n "$used" ] && [ "$used" -gt $((2200*1048576)) ]; then
-    warn "$((used/1048576)) MiB of VRAM is already in use by something else (ComfyUI? LM Studio? another model?)."
-    warn "Both aider models need ~14.9 GB together; expect Ollama to swap them (slower) until that is freed."
+  [ -n "$used" ] && echo $((used/1048576))
+}
+gpu_users() {  # best-effort list of who holds the GPU: ollama models + other processes
+  local m
+  m=$(ollama ps 2>/dev/null | awk 'NR>1{print $1}' | tr '\n' ' ')
+  [ -n "$m" ] && printf 'ollama:[%s] ' "$m"
+  rocm-smi --showpids 2>/dev/null | awk '/^[0-9]+/{print $2}' | sort -u | tr '\n' ' '
+}
+if command -v rocm-smi >/dev/null 2>&1; then
+  used=$(vram_used_mib)
+  if [ -n "$used" ] && [ "$used" -gt "$GPU_FREE_THRESHOLD_MIB" ]; then
+    # our own models from a previous session do not count as "someone else"
+    others=$(ollama ps 2>/dev/null | awk 'NR>1{print $1}' | grep -v -e "^$A_NAME$" -e "^$E_NAME$" | tr '\n' ' ')
+    pids=$(rocm-smi --showpids 2>/dev/null | awk '/^[0-9]+/{print $2}' | grep -v -e '^ollama' | sort -u | tr '\n' ' ')
+    if [ -n "$others$pids" ] || [ "$used" -gt 15500 ]; then
+      waited=0
+      warn "GPU busy: ${used} MiB VRAM in use by $(gpu_users)"
+      if [ "$GPU_WAIT_MAX" -gt 0 ]; then
+        say "waiting up to $((GPU_WAIT_MAX/60)) min for it to be released (Ctrl-C to abort, --no-wait to skip) ..."
+        while [ "$waited" -lt "$GPU_WAIT_MAX" ]; do
+          sleep 15; waited=$((waited+15))
+          used=$(vram_used_mib)
+          [ -z "$used" ] && break
+          if [ "$used" -le "$GPU_FREE_THRESHOLD_MIB" ]; then say "GPU is free (${used} MiB in use) after ${waited}s"; break; fi
+          others=$(ollama ps 2>/dev/null | awk 'NR>1{print $1}' | grep -v -e "^$A_NAME$" -e "^$E_NAME$" | tr '\n' ' ')
+          pids=$(rocm-smi --showpids 2>/dev/null | awk '/^[0-9]+/{print $2}' | grep -v -e '^ollama' | sort -u | tr '\n' ' ')
+          if [ -z "$others$pids" ] && [ "$used" -le 15500 ]; then say "only our own models remain on the GPU; continuing"; break; fi
+          [ $((waited % 60)) -eq 0 ] && say "still waiting: ${used} MiB in use by $(gpu_users)"
+        done
+        [ "$waited" -ge "$GPU_WAIT_MAX" ] && warn "gave up waiting after $((GPU_WAIT_MAX/60)) min; launching anyway — expect Ollama to swap models (slower)."
+      else
+        warn "not waiting (--no-wait / GPU_WAIT_MAX=0); expect Ollama to swap models (slower) until that is freed."
+      fi
+    fi
   fi
 fi
 

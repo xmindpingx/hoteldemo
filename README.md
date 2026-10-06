@@ -46,7 +46,7 @@ Open `/admin`, enter **`hoteldemo`**. Sections in the sidebar:
 |---|---|
 | General & Contact Info | Hotel name, location line, brand line, tagline, logo, phone, email, address, check-in/out, rating badge, booking mode (inquiry form vs. external booking URL), currency, announcement bar |
 | Theme & Fonts | Primary + accent colors, heading/body fonts (Google Fonts list), header style, button shape, hero darkness, custom CSS |
-| SEO & Head | Title, meta description, share image, favicon, custom `<head>` HTML (analytics etc.) |
+| SEO Wizard | 9 steps: Basics (site URL, category, title patterns), Pages & Previews (per-page titles/descriptions with live search-result preview), Social Cards, Structured Data (JSON-LD), Local SEO, Search Engines (robots, sitemap, verification), Analytics (GA4/GTM/Pixel/Clarity), Hosting & Redirects (GoDaddy DNS guidance, 301 rules), Audit & Score |
 | Navigation | Menu items (label, link, on/off) |
 | Home Page Layout | Drag-free ordering of home-page sections; remove/add sections |
 | Hero Banner | Badge, heading, subheading, buttons, slideshow images, booking bar on/off |
@@ -138,10 +138,14 @@ It adds the ingress rule `hoteldemo1… → http://127.0.0.1:8097` (keeping exis
 Useful checks:
 
 ```bash
+bash scripts/health.sh            # or: npm run health
+node scripts/seo-audit.mjs        # or: npm run audit
 pm2 logs hoteldemo --lines 50
-curl -I http://127.0.0.1:8097/
-curl -I https://hoteldemo1.signaturediversified.com/
 ```
+
+Day-to-day operation (deploy loop, backups, troubleshooting) is in `docs/OPERATIONS.md`; moving the
+site onto the hotel's real domain is in `docs/GODADDY-CUTOVER.md`. The repo is also set up as an
+aider project (`aider-hoteldemo` from the Desktop "Aider Projects" launcher; see `start_aider.sh`).
 
 ## Project structure
 
@@ -169,7 +173,19 @@ data/
   samples/upscale-demo.json  fictional sample dataset
   site.json               LIVE content (git-ignored, created on first run)
   inquiries.json, admin.json, .secret, backups/   runtime files (git-ignored)
-scripts/cloudflare-route.mjs   tunnel + DNS helper
+scripts/
+  cloudflare-route.mjs    tunnel + DNS helper
+  deploy.sh               backup → pull → install → test → pm2 restart → health (human runs it)
+  health.sh               read-only health check (pm2, local routes, public URL, SEO audit)
+  backup.sh               full content backup / --restore (data/ + uploads)
+  seo-audit.mjs           CLI version of the admin Audit & Score tab
+  cutover-check.mjs       DNS / https / canonical checks for a domain move
+  site-url.mjs            show or set the canonical Site URL
+  aider-test.sh           offline syntax/load/EJS checks (aider's /test)
+docs/
+  OPERATIONS.md           runbook: routine, deploy loop, troubleshooting, who-does-what
+  GODADDY-CUTOVER.md      moving the site onto the hotel's real domain (GoDaddy → Cloudflare)
+  SEO-ENGINE.md           how src/seo.js and the SEO Wizard fit together, how to extend them
 ```
 
 ## Public routes
