@@ -9,6 +9,8 @@ const { AMENITY_ICON_NAMES, ICONS } = require('./icons');
 const { FONT_OPTIONS } = require('./helpers');
 
 const seoLib = require('./seo');
+const features = require('./features');
+const needs = features.requireFeature;
 
 const router = express.Router();
 const UPLOAD_DIR = path.join(__dirname, '..', 'public', 'uploads');
@@ -84,10 +86,13 @@ api.get('/meta', (req, res) => {
     backups: store.listBackups(),
     passphraseSource: auth.passphraseSource(),
     dataDir: store.DATA_DIR,
+    // plan entitlements set by the superadmin: what to lock/hide and what to tell the hotel
+    features: features.forAdmin(),
+    isSuper: auth.isSuper(req),
   });
 });
 
-api.get('/datasets/:id', (req, res) => {
+api.get('/datasets/:id', needs('admin.datasets'), (req, res) => {
   const id = req.params.id;
   let data = null;
   if (id === 'default') data = store.loadDefaults();
@@ -97,7 +102,7 @@ api.get('/datasets/:id', (req, res) => {
   res.json(store.normalize(data));
 });
 
-api.post('/reset', (req, res) => {
+api.post('/reset', needs('admin.datasets'), (req, res) => {
   const mode = String((req.body && req.body.mode) || 'default');
   try {
     const site = store.resetSite(mode);
@@ -107,7 +112,7 @@ api.post('/reset', (req, res) => {
   }
 });
 
-api.post('/reset-section', (req, res) => {
+api.post('/reset-section', needs('admin.datasets'), (req, res) => {
   const { section, mode } = req.body || {};
   try {
     const site = store.resetSection(String(section || ''), String(mode || 'default'));
@@ -117,13 +122,13 @@ api.post('/reset-section', (req, res) => {
   }
 });
 
-api.get('/export', (req, res) => {
+api.get('/export', needs('admin.exportImport'), (req, res) => {
   const site = store.getSite();
   res.setHeader('Content-Disposition', `attachment; filename="site-${new Date().toISOString().slice(0, 10)}.json"`);
   res.json(site);
 });
 
-api.post('/import', (req, res) => {
+api.post('/import', needs('admin.exportImport'), (req, res) => {
   const body = req.body;
   if (!body || typeof body !== 'object' || !body.general) return res.status(400).json({ error: 'That file does not look like a site export (missing "general").' });
   try {
@@ -134,8 +139,8 @@ api.post('/import', (req, res) => {
   }
 });
 
-api.get('/backups', (req, res) => res.json({ backups: store.listBackups() }));
-api.post('/backups/restore', (req, res) => {
+api.get('/backups', needs('admin.backups'), (req, res) => res.json({ backups: store.listBackups() }));
+api.post('/backups/restore', needs('admin.backups'), (req, res) => {
   try {
     const site = store.restoreBackup(req.body && req.body.name);
     res.json({ ok: true, site });
@@ -144,15 +149,21 @@ api.post('/backups/restore', (req, res) => {
   }
 });
 
-api.post('/upload', (req, res) => {
+api.post('/upload', needs('admin.media'), (req, res) => {
   upload.array('files', 10)(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message });
-    const files = (req.files || []).map((f) => ({ url: `/uploads/${f.filename}`, name: f.filename, size: f.size }));
-    res.json({ ok: true, files });
+    // plan limit on upload size (multer's 12 MB is the hard ceiling)
+    const maxMb = features.limit('maxUploadMb');
+    const tooBig = maxMb ? (req.files || []).filter((f) => f.size > maxMb * 1024 * 1024) : [];
+    for (const f of tooBig) { try { fs.unlinkSync(f.path); } catch (_) { /* ignore */ } }
+    const kept = (req.files || []).filter((f) => !tooBig.includes(f));
+    const files = kept.map((f) => ({ url: `/uploads/${f.filename}`, name: f.filename, size: f.size }));
+    if (tooBig.length && !kept.length) return res.status(400).json({ error: `Image is larger than the ${maxMb} MB allowed on this plan.` });
+    res.json({ ok: true, files, rejected: tooBig.map((f) => ({ name: f.originalname, reason: `over ${maxMb} MB` })) });
   });
 });
 
-api.get('/uploads', (req, res) => {
+api.get('/uploads', needs('admin.media'), (req, res) => {
   const files = fs.readdirSync(UPLOAD_DIR)
     .filter((f) => !f.startsWith('.'))
     .map((f) => {
@@ -163,7 +174,7 @@ api.get('/uploads', (req, res) => {
   res.json({ files });
 });
 
-api.delete('/uploads/:name', (req, res) => {
+api.delete('/uploads/:name', needs('admin.media'), (req, res) => {
   const name = path.basename(req.params.name);
   const file = path.join(UPLOAD_DIR, name);
   if (!file.startsWith(UPLOAD_DIR) || !fs.existsSync(file)) return res.status(404).json({ error: 'Not found' });
@@ -171,17 +182,17 @@ api.delete('/uploads/:name', (req, res) => {
   res.json({ ok: true });
 });
 
-api.get('/inquiries', (req, res) => res.json({ inquiries: store.getInquiries() }));
-api.patch('/inquiries/:id', (req, res) => {
+api.get('/inquiries', needs('admin.inquiries'), (req, res) => res.json({ inquiries: store.getInquiries() }));
+api.patch('/inquiries/:id', needs('admin.inquiries'), (req, res) => {
   const item = store.updateInquiry(req.params.id, { read: Boolean(req.body && req.body.read) });
   if (!item) return res.status(404).json({ error: 'Not found' });
   res.json({ ok: true, item });
 });
-api.delete('/inquiries/:id', (req, res) => {
+api.delete('/inquiries/:id', needs('admin.inquiries'), (req, res) => {
   if (!store.deleteInquiry(req.params.id)) return res.status(404).json({ error: 'Not found' });
   res.json({ ok: true });
 });
-api.delete('/inquiries', (req, res) => {
+api.delete('/inquiries', needs('admin.inquiries'), (req, res) => {
   store.clearInquiries();
   res.json({ ok: true });
 });
@@ -191,7 +202,7 @@ api.delete('/inquiries', (req, res) => {
 // state, exactly as it would look live — without touching disk.
 api.post('/seo/preview', (req, res) => {
   try {
-    const draft = store.normalize((req.body && req.body.site) || {});
+    const draft = features.apply(store.normalize((req.body && req.body.site) || {}));
     const pageKey = seoLib.PAGE_KEYS.includes(req.body && req.body.page) ? req.body.page : 'home';
     const base = seoLib.baseUrl(draft, req);
     const ctx = { path: seoLib.PAGE_PATHS[pageKey], page: pageKey, title: seoLib.PAGE_LABELS[pageKey], req, base };
@@ -210,9 +221,9 @@ api.post('/seo/preview', (req, res) => {
 });
 
 // Audit: grade the LIVE published site (fetches this server's own pages over loopback).
-api.get('/seo/audit', async (req, res) => {
+api.get('/seo/audit', needs('seo.audit'), async (req, res) => {
   try {
-    const site = store.getSite();
+    const site = features.apply(store.getSite());
     const result = await seoLib.audit(site, { port: SELF_PORT, base: seoLib.baseUrl(site, req) });
     res.json(result);
   } catch (err) {
@@ -220,7 +231,7 @@ api.get('/seo/audit', async (req, res) => {
   }
 });
 
-api.post('/passphrase', (req, res) => {
+api.post('/passphrase', needs('admin.passphrase'), (req, res) => {
   const { current, next } = req.body || {};
   if (process.env.ADMIN_PASSPHRASE) return res.status(400).json({ error: 'The passphrase is fixed by the ADMIN_PASSPHRASE environment variable on the server.' });
   if (!auth.checkPassphrase(current)) return res.status(400).json({ error: 'Current passphrase is incorrect.' });

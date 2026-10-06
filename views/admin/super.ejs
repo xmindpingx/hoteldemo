@@ -1,0 +1,170 @@
+<%
+  const groups = [...new Set(catalog.map((f) => f.group))];
+  const onCount = catalog.filter((f) => features.flags[f.id] !== false).length;
+%><!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Superadmin · <%= site.general.hotelName %></title><link rel="icon" href="/img/favicon.svg"><link rel="stylesheet" href="/admin/admin.css?v=2"><meta name="robots" content="noindex, nofollow"></head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">🛠️<span><%= site.general.hotelName %><small>Superadmin · plan &amp; features</small></span></div>
+    <div class="group">Jump to</div>
+    <a class="nav" href="#plan">Plan &amp; upgrade message</a>
+    <% groups.forEach((g) => { %><a class="nav" href="#g-<%= g.toLowerCase().replace(/[^a-z]+/g, '-') %>"><%= g %></a><% }) %>
+    <a class="nav" href="#limits">Limits</a>
+    <a class="nav" href="#security">Passphrases</a>
+    <div class="foot">
+      <a class="btn" href="/admin" target="_blank">Open hotel admin</a>
+      <a class="btn" href="/" target="_blank">View website</a>
+      <form method="post" action="/superadmin/logout"><button type="submit" class="btn btn-block">Sign out</button></form>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <h1>Features &amp; plan</h1>
+      <div class="status"><span id="count"><%= onCount %> of <%= catalog.length %> features enabled</span><span id="dirty"></span><button type="button" class="btn btn-primary" id="save" disabled>Save changes</button></div>
+    </div>
+    <div class="content">
+      <div class="alert alert-info">Every switch below is enforced on the live website and in the hotel's admin. Turning a feature off hides it from the public site, locks its admin section, and shows the hotel your upgrade message with the price/note you set — so each feature can be sold on its own. Changes take effect on save; nothing the hotel entered is deleted, it is just not published until the feature is on again.</div>
+
+      <div class="card" id="plan">
+        <div class="card-head"><h2>Plan &amp; upgrade message</h2></div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div class="field"><label>Plan name <span class="help">— shown to the hotel admin, e.g. "Starter"</span></label><input type="text" data-k="planName" value="<%= features.planName %>"></div>
+            <div class="field"><label>Contact for upgrades <span class="help">— phone, email or link shown on every locked feature</span></label><input type="text" data-k="upgrade.contact" value="<%= features.upgrade.contact %>" placeholder="sales@…, 480-…, https://…"></div>
+          </div>
+          <div class="field"><label>Upgrade message</label><textarea data-k="upgrade.message"><%= features.upgrade.message %></textarea></div>
+          <div class="list-actions">
+            <button type="button" class="btn" id="all-on">Enable all</button>
+            <button type="button" class="btn btn-danger" id="all-off">Disable all</button>
+            <span class="muted small">Last saved: <%= features.updatedAt ? new Date(features.updatedAt).toLocaleString() : 'never (everything enabled by default)' %> · stored in <code>data/features.json</code> (not part of the hotel's export/import/reset)</span>
+          </div>
+        </div>
+      </div>
+
+      <% groups.forEach((g) => { %>
+      <div class="card" id="g-<%= g.toLowerCase().replace(/[^a-z]+/g, '-') %>">
+        <div class="card-head"><h2><%= g %></h2><span class="spacer"></span>
+          <button type="button" class="btn btn-sm" data-group-on="<%= g %>">all on</button>
+          <button type="button" class="btn btn-sm" data-group-off="<%= g %>">all off</button></div>
+        <div class="card-body feature-list">
+          <% catalog.filter((f) => f.group === g).forEach((f) => { const m = features.meta[f.id] || {}; const on = features.flags[f.id] !== false; %>
+          <div class="feature <%= on ? '' : 'off' %>" data-feature="<%= f.id %>" data-group="<%= g %>">
+            <label class="toggle"><input type="checkbox" data-flag="<%= f.id %>" <%= on ? 'checked' : '' %>><span class="sw"></span><span class="t-label"><%= f.label %></span></label>
+            <div class="feature-desc"><%= f.desc %> <span class="mono muted"><%= f.id %></span></div>
+            <div class="feature-meta">
+              <input type="text" data-meta="<%= f.id %>.price" value="<%= m.price || '' %>" placeholder="price label, e.g. $15/mo (optional)">
+              <input type="text" data-meta="<%= f.id %>.note" value="<%= m.note || '' %>" placeholder="note shown on the locked panel (optional)">
+            </div>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+      <% }) %>
+
+      <div class="card" id="limits">
+        <div class="card-head"><h2>Limits</h2><span class="spacer"></span><span class="muted small">0 = unlimited. Extra items stay in the admin but are not published.</span></div>
+        <div class="card-body"><div class="grid-3">
+          <% limits.forEach((l) => { %>
+          <div class="field"><label><%= l.label %><% if (l.desc) { %> <span class="help">— <%= l.desc %></span><% } %></label><input type="number" min="0" step="1" data-limit="<%= l.id %>" value="<%= features.limits[l.id] || 0 %>"></div>
+          <% }) %>
+        </div></div>
+      </div>
+
+      <div class="card" id="security">
+        <div class="card-head"><h2>Passphrases</h2></div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div>
+              <h3 style="font-size:14px;margin-bottom:8px">Superadmin passphrase <span class="pill">source: <%= passphraseSource %></span></h3>
+              <% if (passphraseSource.startsWith('environment')) { %><div class="alert alert-info">Fixed by SUPERADMIN_PASSPHRASE on the server.</div><% } else { %>
+              <div class="field"><input type="password" id="sp-cur" placeholder="Current superadmin passphrase" autocomplete="current-password"></div>
+              <div class="field"><input type="password" id="sp-next" placeholder="New passphrase (min 8 chars)" autocomplete="new-password"></div>
+              <div class="field"><input type="password" id="sp-next2" placeholder="Repeat new passphrase" autocomplete="new-password"></div>
+              <button type="button" class="btn" id="sp-change">Change superadmin passphrase</button>
+              <% if (passphraseSource === 'default') { %><div class="alert alert-warn" style="margin-top:8px">Still the default passphrase — change it before handing the site to the client.</div><% } %>
+              <% } %>
+            </div>
+            <div>
+              <h3 style="font-size:14px;margin-bottom:8px">Hotel admin passphrase <span class="pill">source: <%= adminPassphraseSource %></span></h3>
+              <% if (adminPassphraseSource.startsWith('environment')) { %><div class="alert alert-info">Fixed by ADMIN_PASSPHRASE on the server.</div><% } else { %>
+              <div class="muted small" style="margin-bottom:8px">Reset the hotel's passphrase without knowing the current one (e.g. the client forgot it).</div>
+              <div class="field"><input type="password" id="ap-next" placeholder="New hotel admin passphrase (min 6 chars)" autocomplete="new-password"></div>
+              <button type="button" class="btn" id="ap-change">Set hotel admin passphrase</button>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  'use strict';
+  const state = <%- JSON.stringify(features) %>;
+  const total = <%= catalog.length %>;
+  let dirty = false;
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  function toast(msg, kind) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.append(t); } t.textContent = msg; t.className = 'toast show ' + (kind || ''); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 3200); }
+  function markDirty() { dirty = true; $('#dirty').innerHTML = '<span class="dirty">● Unsaved changes</span>'; $('#save').disabled = false; }
+  function refreshCount() { const n = Object.values(state.flags).filter(Boolean).length; $('#count').textContent = n + ' of ' + total + ' features enabled'; }
+  function setPath(k, v) { const p = k.split('.'); let o = state; for (let i = 0; i < p.length - 1; i++) { o[p[i]] = o[p[i]] || {}; o = o[p[i]]; } o[p[p.length - 1]] = v; }
+
+  document.addEventListener('input', (e) => {
+    const el = e.target;
+    if (el.dataset.k) setPath(el.dataset.k, el.value);
+    else if (el.dataset.meta) setPath('meta.' + el.dataset.meta, el.value);
+    else if (el.dataset.limit) state.limits[el.dataset.limit] = Math.max(0, Math.floor(Number(el.value) || 0));
+    else return;
+    markDirty();
+  });
+  document.addEventListener('change', (e) => {
+    const el = e.target;
+    if (!el.dataset.flag) return;
+    state.flags[el.dataset.flag] = el.checked;
+    el.closest('.feature').classList.toggle('off', !el.checked);
+    refreshCount(); markDirty();
+  });
+  function setAll(on, group) {
+    $$('input[data-flag]').forEach((el) => { if (group && el.closest('.feature').dataset.group !== group) return; el.checked = on; state.flags[el.dataset.flag] = on; el.closest('.feature').classList.toggle('off', !on); });
+    refreshCount(); markDirty();
+  }
+  $('#all-on').onclick = () => setAll(true);
+  $('#all-off').onclick = () => { if (confirm('Disable every feature? The public site will show only the home page hero, overview and footer until features are re-enabled.')) setAll(false); };
+  $$('[data-group-on]').forEach((b) => { b.onclick = () => setAll(true, b.dataset.groupOn); });
+  $$('[data-group-off]').forEach((b) => { b.onclick = () => setAll(false, b.dataset.groupOff); });
+
+  async function api(path, opts = {}) {
+    const headers = { 'X-Requested-With': 'fetch', 'Content-Type': 'application/json' };
+    const res = await fetch('/superadmin/api' + path, { credentials: 'same-origin', ...opts, headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+    if (res.status === 401) { location.href = '/superadmin/login'; throw new Error('Signed out'); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+    return data;
+  }
+  async function save() {
+    const btn = $('#save'); btn.disabled = true; btn.textContent = 'Saving…';
+    try { await api('/features', { method: 'PUT', body: state }); dirty = false; $('#dirty').textContent = 'Saved ' + new Date().toLocaleTimeString(); toast('Saved — the website and hotel admin now reflect these features', 'ok'); }
+    catch (e) { toast('Save failed: ' + e.message, 'err'); btn.disabled = false; }
+    finally { btn.textContent = 'Save changes'; }
+  }
+  $('#save').onclick = save;
+  document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (dirty) save(); } });
+  window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  const spc = $('#sp-change');
+  if (spc) spc.onclick = async () => {
+    if ($('#sp-next').value !== $('#sp-next2').value) return toast('New passphrases do not match', 'err');
+    try { await api('/passphrase', { method: 'POST', body: { current: $('#sp-cur').value, next: $('#sp-next').value } }); toast('Superadmin passphrase changed', 'ok'); ['#sp-cur', '#sp-next', '#sp-next2'].forEach((s) => { $(s).value = ''; }); }
+    catch (e) { toast(e.message, 'err'); }
+  };
+  const apc = $('#ap-change');
+  if (apc) apc.onclick = async () => {
+    if (!confirm('Set a new passphrase for the HOTEL admin? Their current one stops working immediately.')) return;
+    try { await api('/admin-passphrase', { method: 'POST', body: { next: $('#ap-next').value } }); toast('Hotel admin passphrase set', 'ok'); $('#ap-next').value = ''; }
+    catch (e) { toast(e.message, 'err'); }
+  };
+})();
+</script>
+</body></html>

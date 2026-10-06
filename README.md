@@ -6,6 +6,7 @@ section order — is edited from `/admin` and stored in one JSON file. No databa
 
 * **Live:** https://hoteldemo1.signaturediversified.com
 * **Admin:** https://hoteldemo1.signaturediversified.com/admin — passphrase `hoteldemo`
+* **Superadmin (vendor-only plan/feature control):** https://hoteldemo1.signaturediversified.com/superadmin — passphrase `hotelsuper`
 * **Server path:** `/home/dad/wwwhotel/hoteldemosite` (runs under pm2 as `hoteldemo` on port 8097)
 
 Default content is for **Budget Suites Extended Stay, 537 S Country Club Dr, Mesa, AZ 85210**.
@@ -22,7 +23,8 @@ rates and policies are placeholders to confirm in the admin panel.
 | Styling | Tailwind CSS (vendored runtime in `public/vendor/`, so no build and no CDN dependency) + `public/css/site.css` |
 | Data | `data/site.json` (live), `data/defaults.json` (default content), `data/blank.json`, `data/samples/*.json` |
 | Admin | Vanilla-JS schema-driven editor (`public/admin/admin.js`) talking to `/admin/api/*` |
-| Auth | Single passphrase → HMAC-signed httpOnly cookie (12 h). Login rate-limited. |
+| Auth | Two independent passphrases → HMAC-signed httpOnly cookies (12 h), rate-limited: hotel admin (`/admin`) and vendor superadmin (`/superadmin`). A superadmin session can also open `/admin`. |
+| Plan/features | `data/features.json` (live, git-ignored) via `src/features.js` — per-feature on/off + numeric limits, enforced server-side and mirrored as locked panels in the admin UI |
 | Uploads | `multer` → `public/uploads/` (images only, 12 MB max) |
 | Process | pm2 (`ecosystem.config.cjs`) · Cloudflare Tunnel → `127.0.0.1:8097` |
 
@@ -85,10 +87,34 @@ same page. You can also run `npm run reset:blank` / `npm run reset:mock` on the 
 
 ### Passphrase
 
-Default is `hoteldemo`. Change it under *Data, Reset & Security* (stored hashed in `data/admin.json`).
-To force a passphrase from the server instead, set `ADMIN_PASSPHRASE` (in `ecosystem.config.cjs`
-or the environment) — it then overrides the panel. Forgot a changed passphrase? Delete
-`data/admin.json` and the default returns.
+Default is `hoteldemo`. Change it under *Data, Reset & Security* (stored hashed in `data/admin.json`),
+or the vendor can reset it from `/superadmin` without knowing the current one. To force a
+passphrase from the server instead, set `ADMIN_PASSPHRASE` (in `ecosystem.config.cjs` or the
+environment) — it then overrides the panel. Forgot a changed passphrase and no superadmin access?
+Delete `data/admin.json` and the default returns.
+
+## Superadmin — plan & feature control (`/superadmin`)
+
+A second, separate login for the site vendor (not the hotel), default passphrase `hotelsuper`
+(`SUPERADMIN_PASSPHRASE` env var to force it). It is for selling features one at a time:
+
+* **Enable/disable ~35 features individually** — every page (Suites, Amenities, Dining, Local
+  Area, Gallery, Reviews, FAQ, Contact), home-page extras (slideshow, booking bar, promotions,
+  overview stats, announcement bar, custom sections, maps, rating badge), booking mode, and admin
+  tools (inquiries, media library, theme/custom CSS, navigation editor, layout editor,
+  export/import, backups, datasets, passphrase change) and SEO Wizard steps individually.
+* **Numeric plan limits** — max rooms, gallery items, promotions, FAQ items, custom sections,
+  upload size (MB) — content over the limit stays in the hotel's admin but isn't published.
+* **Per-feature price + note** — free-text, shown on the locked panel the hotel admin sees in
+  place of a disabled feature/section, alongside a plan-wide upgrade message and contact info —
+  so each feature can be pitched as its own micro-sale.
+* **Enforcement is server-side** in both places: the public site (`features.apply(site)` runs
+  before every page render and before the sitemap/SEO engine), and the hotel's own `/admin/api/*`
+  (`features.requireFeature('id')` middleware returns 403 for a disabled tool). The admin UI
+  (`public/admin/admin.js`) mirrors this so a disabled feature shows a locked panel instead of a
+  broken form.
+* Stored separately in `data/features.json` — never touched by the hotel's own export/import,
+  reset, or backup-restore, so plan entitlements can't be bypassed from the hotel side.
 
 ## Configuration (environment variables)
 
@@ -97,9 +123,10 @@ or the environment) — it then overrides the panel. Forgot a changed passphrase
 | `PORT` | `8097` | Listen port (bound to 127.0.0.1) |
 | `HOST` | `127.0.0.1` | Bind address |
 | `SITE_URL` | – | Public URL for canonical/OG tags and the sitemap |
-| `ADMIN_PASSPHRASE` | – | Overrides the admin passphrase |
+| `ADMIN_PASSPHRASE` | – | Overrides the hotel admin passphrase |
+| `SUPERADMIN_PASSPHRASE` | – | Overrides the vendor superadmin passphrase |
 | `SESSION_SECRET` | random, saved in `data/.secret` | Cookie-signing secret |
-| `DATA_DIR` | `./data` | Where `site.json`, `inquiries.json`, `admin.json`, `backups/` live |
+| `DATA_DIR` | `./data` | Where `site.json`, `inquiries.json`, `admin.json`, `features.json`, `backups/` live |
 
 See `.env.example`. pm2 reads values from `ecosystem.config.cjs`.
 
@@ -157,13 +184,15 @@ src/
   auth.js                 passphrase check, signed cookie, rate limiting, CSRF header guard
   public.js               guest routes (/, /suites, /suites/:slug, /amenities, /dining, /area, /gallery, /reviews, /contact, robots, sitemap)
   admin.js                /admin pages + /admin/api/* JSON API + uploads
+  superadmin.js           /superadmin pages + /superadmin/api/* JSON API (vendor plan/feature control)
+  features.js             feature entitlements: FEATURES/LIMITS catalog, data/features.json store, apply(site), requireFeature(id)
   helpers.js              template helpers (money, stars, map URLs, fonts, theme colors)
   icons.js                inline SVG icon set
 views/                    EJS templates (partials/ holds the reusable sections)
 public/
   css/site.css            custom styles layered on Tailwind
   js/site.js              nav, slideshow, filters, lightbox, booking-bar dates
-  admin/admin.css|js      the admin panel
+  admin/admin.css|js      the hotel admin panel + superadmin dashboard styles
   img/property/           property photos; img/favicon.svg, img/placeholder.svg
   uploads/                admin uploads (git-ignored)
   vendor/tailwind-*.js    Tailwind runtime
@@ -172,13 +201,14 @@ data/
   blank.json              empty template
   samples/upscale-demo.json  fictional sample dataset
   site.json               LIVE content (git-ignored, created on first run)
-  inquiries.json, admin.json, .secret, backups/   runtime files (git-ignored)
+  inquiries.json, admin.json, features.json, .secret, backups/   runtime files (git-ignored)
 scripts/
   cloudflare-route.mjs    tunnel + DNS helper
   deploy.sh               backup → pull → install → test → pm2 restart → health (human runs it)
   health.sh               read-only health check (pm2, local routes, public URL, SEO audit)
   backup.sh               full content backup / --restore (data/ + uploads)
   smoke.sh                throwaway server on a free port: every route + admin API (aider's /test)
+  smoke-superadmin.sh     throwaway server: superadmin login, feature toggles, enforcement, passphrase resets, upload limit (aider's /test)
   seo-audit.mjs           CLI version of the admin Audit & Score tab
   cutover-check.mjs       DNS / https / canonical checks for a domain move
   site-url.mjs            show or set the canonical Site URL
@@ -194,6 +224,10 @@ docs/
 
 `/` · `/suites` · `/suites/<slug>` · `/amenities` · `/dining` · `/area` · `/gallery` · `/reviews`
 (when enabled) · `/contact` (GET form, POST submission) · `/robots.txt` · `/sitemap.xml` · `/admin`
+· `/superadmin` (vendor-only; also linked from the bottom of `/admin` when signed in as superadmin)
+
+Any of the page routes above redirects to `/` if the site vendor has disabled that feature in
+`/superadmin` — see the "Superadmin" section above.
 
 ## Notes
 

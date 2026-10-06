@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Superadmin sign in · <%= site.general.hotelName %></title><link rel="icon" href="/img/favicon.svg"><link rel="stylesheet" href="/admin/admin.css?v=2"><meta name="robots" content="noindex, nofollow"></head>
+<body class="login-body">
+<form method="post" action="/superadmin/login" class="login-card" autocomplete="off">
+  <div class="login-logo">🛠️</div>
+  <h1>Superadmin</h1>
+  <p class="muted">Plan &amp; feature control for <strong><%= site.general.hotelName %></strong>. This area is for the site vendor, not the hotel.</p>
+  <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+  <label>Superadmin passphrase<input type="password" name="passphrase" required autofocus autocomplete="current-password"></label>
+  <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+  <a href="/admin/login" class="muted small">Hotel admin sign in →</a>
+</form>
+</body></html>

@@ -112,6 +112,32 @@
     if (!state.dirty) { state.dirty = true; renderStatus(); }
   }
 
+  // ---------------------------------------------------------------- plan / feature entitlements
+  // Set by the superadmin (/superadmin) and served in /admin/api/meta → meta.features. A locked
+  // feature is hidden from the public site by the server; here we lock its editor and show the
+  // upgrade message instead of a dead form.
+  const plan = () => (state.meta && state.meta.features) || { flags: {}, limits: {}, locked: [], upgrade: {} };
+  const featureOn = (id) => !id || plan().flags[id] !== false;
+  const featureLimit = (id) => (id && plan().limits[id]) || 0;
+  const lockedInfo = (id) => plan().locked.find((l) => l.id === id) || { id, label: id, desc: '' };
+  function renderLocked(id, compact = false) {
+    const info = lockedInfo(id), up = plan().upgrade || {};
+    const price = info.price ? h('span', { class: 'pill', style: 'background:#fef3c7;color:#92400e' }, info.price) : null;
+    if (compact) {
+      return h('div', { class: 'locked locked-compact' }, h('span', { html: svg('lock') }), h('span', {}, h('strong', {}, info.label), ' — not in your plan.'), price, up.contact ? h('span', { class: 'muted' }, ` Upgrade: ${up.contact}`) : null);
+    }
+    return h('div', { class: 'locked' },
+      h('div', { class: 'locked-icon', html: svg('lock') }),
+      h('h2', {}, info.label),
+      info.desc ? h('p', { class: 'muted' }, info.desc) : null,
+      h('p', {}, up.message || 'This feature is not included in your current plan.'),
+      price ? h('div', {}, 'Price: ', price) : null,
+      info.note ? h('p', { class: 'muted' }, info.note) : null,
+      up.contact ? h('p', {}, h('strong', {}, 'To add it: '), /^https?:\/\//i.test(up.contact) ? h('a', { href: up.contact, target: '_blank', rel: 'noopener' }, up.contact) : up.contact) : null,
+      plan().planName ? h('div', { class: 'muted small' }, `Current plan: ${plan().planName}`) : null,
+    );
+  }
+
   // ------------------------------------------------------------------ schema
   const HOME_SECTION_KEYS = ['promotions', 'overview', 'rooms', 'amenities', 'dining', 'area', 'gallery', 'reviews', 'faq', 'contact'];
   const POSITIONS = ['after-hero', ...HOME_SECTION_KEYS.map((k) => 'after-' + k), 'before-footer', 'page-amenities', 'page-dining', 'page-area', 'page-gallery'];
@@ -148,14 +174,14 @@
         { type: 'row3', fields: [F.text('state', 'State'), F.text('zip', 'ZIP'), F.text('country', 'Country')] },
       ]),
       { type: 'row', fields: [F.text('checkInTime', 'Check-in time', { help: 'Leave blank to hide' }), F.text('checkOutTime', 'Check-out time')] },
-      { type: 'row', fields: [F.sel('bookingMode', 'Booking mode', [['inquiry', 'Inquiry form on this site'], ['external', 'External booking link']]), F.text('bookingUrl', 'External booking URL', { help: 'Used when booking mode is "External"' })] },
+      { type: 'row', fields: [F.sel('bookingMode', 'Booking mode', [['inquiry', 'Inquiry form on this site'], ['external', 'External booking link']], { feature: 'booking.externalLink' }), F.text('bookingUrl', 'External booking URL', { help: 'Used when booking mode is "External"', feature: 'booking.externalLink' })] },
       { type: 'row', fields: [F.text('bookNowLabel', '"Book" button label'), F.sel('currency', 'Currency', ['USD', 'CAD', 'EUR', 'GBP', 'MXN'])] },
       F.group('rating', 'Rating badge (hero)', [
-        F.bool('showRating', 'Show rating in hero'),
+        F.bool('showRating', 'Show rating in hero', { feature: 'ratingBadge' }),
         { type: 'row3', fields: [F.num('starRating', 'Star rating (0–5)', { step: 0.5 }), F.num('reviewScore', 'Review score', { step: 0.1 }), F.num('reviewCount', 'Review count')] },
       ], { flat: true }),
       F.group('announcement', 'Announcement bar (top of every page)', [
-        F.bool('enabled', 'Show announcement bar'),
+        F.bool('enabled', 'Show announcement bar', { feature: 'announcement' }),
         { type: 'row', fields: [F.text('text', 'Text'), F.text('href', 'Link (optional)')] },
       ]),
     ] },
@@ -165,18 +191,18 @@
       F.text('ratesNote', 'Rates note / summary', { help: 'Displayed on the contact and booking pages.' }),
       F.area('petPolicy', 'Pet policy', { help: 'Displayed in the Amenities section. Leave blank to hide.' }),
     ] },
-    { id: 'theme', title: 'Theme & Fonts', icon: 'palette', group: 'Site', path: ['theme'], fields: [
+    { id: 'theme', title: 'Theme & Fonts', icon: 'palette', group: 'Site', path: ['theme'], feature: 'admin.theme', fields: [
       { type: 'row', fields: [F.color('primary', 'Primary color', { help: 'Header accents, buttons, footer' }), F.color('accent', 'Accent color', { help: 'Highlights, call-to-action buttons' })] },
       { type: 'row', fields: [F.sel('headingFont', 'Heading font', 'fonts'), F.sel('bodyFont', 'Body font', 'fonts')] },
       { type: 'row3', fields: [F.sel('headerStyle', 'Header style', [['light', 'Light (white)'], ['dark', 'Dark (primary color)']]), F.sel('buttonStyle', 'Button corners', [['rounded', 'Rounded'], ['pill', 'Pill'], ['none', 'Square']]), F.num('heroOverlay', 'Hero darkness (0–90 %)', { min: 0, max: 90 })] },
-      F.code('customCss', 'Custom CSS', { help: 'Advanced: injected into every page.' }),
+      F.code('customCss', 'Custom CSS', { help: 'Advanced: injected into every page.', feature: 'admin.customCss' }),
     ] },
     { id: 'seo', title: 'SEO Wizard', icon: 'search', group: 'Site', custom: 'seo' },
-    { id: 'nav', title: 'Navigation', icon: 'menu', group: 'Site', path: [], fields: [
+    { id: 'nav', title: 'Navigation', icon: 'menu', group: 'Site', path: [], feature: 'admin.navigation', fields: [
       F.list('nav', 'Menu items', [{ type: 'row', fields: [F.text('label', 'Label'), F.text('href', 'Link')] }, F.bool('enabled', 'Show in menu')], { itemLabel: 'label', template: { label: 'New page', href: '/', enabled: true } }),
       { type: 'note', html: 'Available pages: <code>/</code>, <code>/suites</code>, <code>/amenities</code>, <code>/dining</code>, <code>/area</code>, <code>/gallery</code>, <code>/reviews</code>, <code>/contact</code>, plus <code>/#faq</code>-style anchors and external links.' },
     ] },
-    { id: 'layout', title: 'Home Page Layout', icon: 'layout', group: 'Site', path: ['layout'], fields: [
+    { id: 'layout', title: 'Home Page Layout', icon: 'layout', group: 'Site', path: ['layout'], feature: 'admin.layout', fields: [
       { type: 'orderlist', key: 'homeOrder', label: 'Order of sections on the home page', options: HOME_SECTION_KEYS, help: 'Remove a section here to keep its page but hide it from the home page. Each section also has its own "show" switch.' },
     ] },
     { id: 'hero', title: 'Hero Banner', icon: 'image', group: 'Content', path: ['hero'], fields: [
@@ -185,25 +211,25 @@
       F.area('subheading', 'Subheading'),
       { type: 'row', fields: [F.text('ctaText', 'Primary button text'), F.text('ctaHref', 'Primary button link', { help: 'Leave blank for the booking link' })] },
       { type: 'row', fields: [F.text('secondaryCtaText', 'Secondary button text'), F.text('secondaryCtaHref', 'Secondary button link')] },
-      { type: 'row', fields: [F.bool('showBookingBar', 'Show check-in / check-out bar under the hero'), F.num('slideInterval', 'Slideshow interval (seconds)', { min: 3 })] },
-      F.list('images', 'Hero images (slideshow)', [F.img('url', 'Image'), F.text('alt', 'Alt text')], { itemLabel: 'alt', thumb: 'url', template: { url: '', alt: '' } }),
+      { type: 'row', fields: [F.bool('showBookingBar', 'Show check-in / check-out bar under the hero', { feature: 'hero.bookingBar' }), F.num('slideInterval', 'Slideshow interval (seconds)', { min: 3, feature: 'hero.slideshow' })] },
+      F.list('images', 'Hero images (slideshow)', [F.img('url', 'Image'), F.text('alt', 'Alt text')], { itemLabel: 'alt', thumb: 'url', template: { url: '', alt: '' }, softFeature: 'hero.slideshow', softNote: 'Slideshow is not on this plan — only the first image is shown.' }),
     ] },
-    { id: 'promotions', title: 'Offers & Promotions', icon: 'tag', group: 'Content', path: ['promotions'], fields: [
+    { id: 'promotions', title: 'Offers & Promotions', icon: 'tag', group: 'Content', path: ['promotions'], feature: 'promotions', fields: [
       enabledToggle(), F.text('heading', 'Section label'),
       F.list('items', 'Promotions', [
         F.text('title', 'Title'), F.area('text', 'Text'),
         { type: 'row3', fields: [F.text('code', 'Promo code'), F.text('ctaText', 'Button text'), F.text('ctaHref', 'Button link')] },
         { type: 'row', fields: [F.sel('style', 'Card style', [['accent', 'Accent color'], ['dark', 'Dark'], ['light', 'Light tint'], ['info', 'Sand']]), F.bool('enabled', 'Visible')] },
-      ], { itemLabel: 'title', template: { title: 'New offer', text: '', code: '', ctaText: 'Learn more', ctaHref: '/contact', style: 'light', enabled: true } }),
+      ], { itemLabel: 'title', limit: 'maxPromotions', template: { title: 'New offer', text: '', code: '', ctaText: 'Learn more', ctaHref: '/contact', style: 'light', enabled: true } }),
     ] },
     { id: 'overview', title: 'Overview', icon: 'text', group: 'Content', path: ['overview'], fields: [
       enabledToggle(), F.text('heading', 'Heading'),
       F.texts('paragraphs', 'Paragraphs'),
       { type: 'row', fields: [F.img('image', 'Side image'), F.text('imageAlt', 'Image alt text')] },
       F.list('highlights', 'Highlights (icon grid)', [{ type: 'row3', fields: [F.icon('icon', 'Icon'), F.text('label', 'Label'), F.text('note', 'Note')] }], { itemLabel: 'label', template: { icon: 'check', label: 'New highlight', note: '' } }),
-      F.list('stats', 'Stat boxes', [{ type: 'row', fields: [F.text('value', 'Value'), F.text('label', 'Label')] }], { itemLabel: 'label', template: { value: '', label: '' } }),
+      F.list('stats', 'Stat boxes', [{ type: 'row', fields: [F.text('value', 'Value'), F.text('label', 'Label')] }], { itemLabel: 'label', template: { value: '', label: '' }, feature: 'overview.stats' }),
     ] },
-    { id: 'rooms', title: 'Suites & Rooms', icon: 'bed', group: 'Content', path: ['rooms'], fields: [
+    { id: 'rooms', title: 'Suites & Rooms', icon: 'bed', group: 'Content', path: ['rooms'], feature: 'page.suites', fields: [
       enabledToggle(), F.text('heading', 'Heading'), F.area('intro', 'Intro text'),
       F.list('items', 'Suites', [
         { type: 'row', fields: [F.text('name', 'Name'), F.text('type', 'Type label', { help: 'e.g. Studio, One Bedroom' })] },
@@ -215,24 +241,24 @@
         F.area('shortDescription', 'Short description (card)'), F.area('description', 'Full description', { help: 'Blank line = new paragraph' }),
         F.strings('features', 'Features list'),
         { type: 'row3', fields: [F.num('priceFrom', 'Price from (0 = "Rates on request")', { step: 1 }), F.text('priceNote', 'Price note'), F.text('bookHref', 'Custom booking link')] },
-      ], { itemLabel: 'name', thumb: 'image', template: { name: 'New suite', slug: '', type: 'Studio', image: '', images: [], sqft: 0, beds: '1 Queen', sleeps: 2, bathrooms: 1, view: '', shortDescription: '', description: '', features: [], priceFrom: 0, priceNote: '', featured: false, enabled: true, bookHref: '' } }),
+      ], { itemLabel: 'name', thumb: 'image', limit: 'maxRooms', template: { name: 'New suite', slug: '', type: 'Studio', image: '', images: [], sqft: 0, beds: '1 Queen', sleeps: 2, bathrooms: 1, view: '', shortDescription: '', description: '', features: [], priceFrom: 0, priceNote: '', featured: false, enabled: true, bookHref: '' } }),
     ] },
-    { id: 'amenities', title: 'Amenities & Policies', icon: 'sparkles', group: 'Content', path: ['amenities'], fields: [
+    { id: 'amenities', title: 'Amenities & Policies', icon: 'sparkles', group: 'Content', path: ['amenities'], feature: 'page.amenities', fields: [
       enabledToggle(), F.text('heading', 'Heading'), F.area('intro', 'Intro text'),
       F.list('featured', 'Featured amenities (cards with photos)', [{ type: 'row', fields: [F.icon('icon', 'Icon'), F.text('title', 'Title')] }, F.area('text', 'Text'), F.img('image', 'Photo')], { itemLabel: 'title', thumb: 'image', template: { icon: 'check', title: 'New amenity', text: '', image: '' } }),
       F.list('categories', 'Amenity checklists', [F.text('name', 'Category name'), F.strings('items', 'Items')], { itemLabel: 'name', template: { name: 'New category', items: [] } }),
       F.list('policies', 'Policies', [{ type: 'row', fields: [F.text('title', 'Title'), F.text('anchor', 'Anchor id', { help: 'Link to it with /amenities#anchor' })] }, F.area('text', 'Text')], { itemLabel: 'title', template: { title: 'New policy', anchor: '', text: '' } }),
     ] },
-    { id: 'dining', title: 'Dining', icon: 'utensils', group: 'Content', path: ['dining'], fields: [
+    { id: 'dining', title: 'Dining', icon: 'utensils', group: 'Content', path: ['dining'], feature: 'page.dining', fields: [
       enabledToggle(), F.text('heading', 'Heading'), F.area('intro', 'Intro text'),
       F.list('items', 'On-site dining / food services', [{ type: 'row', fields: [F.text('name', 'Name'), F.text('badge', 'Badge', { help: 'e.g. Included, Open 24 hours' })] }, F.text('hours', 'Hours'), F.area('description', 'Description'), { type: 'row', fields: [F.img('image', 'Photo'), F.bool('enabled', 'Visible')] }], { itemLabel: 'name', thumb: 'image', template: { name: 'New item', badge: '', hours: '', description: '', image: '', enabled: true } }),
       F.list('nearby', 'Nearby restaurants', [{ type: 'row', fields: [F.text('name', 'Name'), F.text('cuisine', 'Cuisine / type')] }, { type: 'row', fields: [F.text('distance', 'Distance'), F.text('url', 'Website')] }, F.text('note', 'Note')], { itemLabel: 'name', template: { name: 'New restaurant', cuisine: '', distance: '', note: '', url: '' } }),
     ] },
-    { id: 'area', title: 'Local Area & Map', icon: 'map', group: 'Content', path: ['area'], fields: [
+    { id: 'area', title: 'Local Area & Map', icon: 'map', group: 'Content', path: ['area'], feature: 'page.area', fields: [
       enabledToggle(), F.text('heading', 'Heading'), F.area('intro', 'Intro text'),
       F.group('map', 'Map', [
         F.text('mapQuery', 'Map search / address', { help: 'What Google Maps should center on. Defaults to the hotel address.' }),
-        F.text('mapEmbedUrl', 'Custom embed URL (optional)', { help: 'Google Maps → Share → Embed a map → copy the src="…" URL.' }),
+        F.text('mapEmbedUrl', 'Custom embed URL (optional)', { help: 'Google Maps → Share → Embed a map → copy the src="…" URL.', feature: 'maps' }),
         { type: 'row', fields: [F.num('latitude', 'Latitude', { step: 0.000001 }), F.num('longitude', 'Longitude', { step: 0.000001 })] },
       ], { flat: true }),
       F.strings('categories', 'Attraction categories'),
@@ -240,29 +266,29 @@
       F.list('airports', 'Airports', [{ type: 'row', fields: [F.text('name', 'Name'), F.text('code', 'Code')] }, { type: 'row', fields: [F.text('distance', 'Distance'), F.text('note', 'Note')] }], { itemLabel: 'name', template: { name: 'Airport', code: '', distance: '', note: '' } }),
       F.list('transport', 'Getting around', [F.text('name', 'Name'), F.text('note', 'Note')], { itemLabel: 'name', template: { name: '', note: '' } }),
     ] },
-    { id: 'gallery', title: 'Gallery', icon: 'image', group: 'Content', path: ['gallery'], fields: [
+    { id: 'gallery', title: 'Gallery', icon: 'image', group: 'Content', path: ['gallery'], feature: 'page.gallery', fields: [
       enabledToggle(), F.text('heading', 'Heading'), F.area('intro', 'Intro text'),
       { type: 'bulkupload', key: 'items', label: 'Add photos', help: 'Upload several photos at once — each becomes a gallery item.' },
-      F.list('items', 'Photos', [F.img('image', 'Photo'), { type: 'row', fields: [F.text('caption', 'Caption'), F.text('category', 'Category', { help: 'Used for the filter buttons' })] }], { itemLabel: 'caption', thumb: 'image', template: { image: '', caption: '', category: '' } }),
+      F.list('items', 'Photos', [F.img('image', 'Photo'), { type: 'row', fields: [F.text('caption', 'Caption'), F.text('category', 'Category', { help: 'Used for the filter buttons' })] }], { itemLabel: 'caption', thumb: 'image', limit: 'maxGalleryItems', template: { image: '', caption: '', category: '' } }),
     ] },
-    { id: 'reviews', title: 'Guest Reviews', icon: 'star', group: 'Content', path: ['reviews'], fields: [
+    { id: 'reviews', title: 'Guest Reviews', icon: 'star', group: 'Content', path: ['reviews'], feature: 'page.reviews', fields: [
       enabledToggle(), F.text('heading', 'Heading'), F.area('intro', 'Intro text'),
       { type: 'note', html: 'Only publish reviews guests actually wrote. The summary score uses the rating fields in <strong>General</strong> if set, otherwise the average of these reviews.' },
       F.list('items', 'Reviews', [{ type: 'row3', fields: [F.text('name', 'Guest name'), F.text('location', 'Location'), F.num('rating', 'Rating (1–5)', { min: 1, max: 5 })] }, { type: 'row', fields: [F.text('date', 'Date label'), F.text('title', 'Title')] }, F.area('text', 'Review text'), F.bool('enabled', 'Visible')], { itemLabel: 'name', template: { name: '', location: '', rating: 5, date: '', title: '', text: '', enabled: true } }),
     ] },
-    { id: 'faq', title: 'FAQ', icon: 'help', group: 'Content', path: ['faq'], fields: [
+    { id: 'faq', title: 'FAQ', icon: 'help', group: 'Content', path: ['faq'], feature: 'page.faq', fields: [
       enabledToggle(), F.text('heading', 'Heading'),
-      F.list('items', 'Questions', [F.text('q', 'Question'), F.area('a', 'Answer')], { itemLabel: 'q', template: { q: 'New question?', a: '' } }),
+      F.list('items', 'Questions', [F.text('q', 'Question'), F.area('a', 'Answer')], { itemLabel: 'q', limit: 'maxFaq', template: { q: 'New question?', a: '' } }),
     ] },
-    { id: 'contact', title: 'Contact Page', icon: 'mail', group: 'Content', path: ['contact'], fields: [
+    { id: 'contact', title: 'Contact Page', icon: 'mail', group: 'Content', path: ['contact'], feature: 'page.contact', fields: [
       enabledToggle('Show contact section on the home page'), F.text('heading', 'Heading'), F.area('intro', 'Intro text'),
-      { type: 'row', fields: [F.bool('formEnabled', 'Enable the inquiry form'), F.bool('showMap', 'Show map on contact page')] },
+      { type: 'row', fields: [F.bool('formEnabled', 'Enable the inquiry form', { feature: 'booking.inquiryForm' }), F.bool('showMap', 'Show map on contact page', { feature: 'maps' })] },
       { type: 'row', fields: [F.text('hours', 'Hours line'), F.text('successMessage', 'Message after sending')] },
       { type: 'note', html: 'Submitted inquiries appear under <strong>Inquiries</strong> in the sidebar. Contact details (phone, email, address) are edited under <strong>General</strong>.' },
     ] },
-    { id: 'custom', title: 'Custom Sections', icon: 'code', group: 'Content', path: [], fields: [
+    { id: 'custom', title: 'Custom Sections', icon: 'code', group: 'Content', path: [], feature: 'customSections', fields: [
       { type: 'note', html: 'Add your own blocks of HTML anywhere on the home page or at the bottom of a sub-page. Anything goes: embedded videos, booking widgets, extra text.' },
-      F.list('customSections', 'Custom sections', [{ type: 'row3', fields: [F.text('title', 'Title (optional)'), F.text('anchor', 'Anchor id'), F.sel('position', 'Position', POSITIONS)] }, F.code('html', 'HTML content'), F.bool('enabled', 'Visible')], { itemLabel: 'title', template: { title: 'New section', anchor: '', position: 'before-footer', html: '<p>Your content here.</p>', enabled: true } }),
+      F.list('customSections', 'Custom sections', [{ type: 'row3', fields: [F.text('title', 'Title (optional)'), F.text('anchor', 'Anchor id'), F.sel('position', 'Position', POSITIONS)] }, F.code('html', 'HTML content'), F.bool('enabled', 'Visible')], { itemLabel: 'title', limit: 'maxCustomSections', template: { title: 'New section', anchor: '', position: 'before-footer', html: '<p>Your content here.</p>', enabled: true } }),
     ] },
     { id: 'footer', title: 'Footer', icon: 'footer', group: 'Content', path: ['footer'], fields: [
       F.area('about', 'About text'),
@@ -271,8 +297,8 @@
       { type: 'row', fields: [F.text('copyright', 'Copyright line', { help: '{year} is replaced with the current year' }), F.text('bottomNote', 'Bottom note')] },
       F.bool('showAdminLink', 'Show "Site Admin" link in the footer'),
     ] },
-    { id: 'inquiries', title: 'Inquiries', icon: 'inbox', group: 'Manage', custom: 'inquiries' },
-    { id: 'media', title: 'Media Library', icon: 'image', group: 'Manage', custom: 'media' },
+    { id: 'inquiries', title: 'Inquiries', icon: 'inbox', group: 'Manage', custom: 'inquiries', feature: 'admin.inquiries' },
+    { id: 'media', title: 'Media Library', icon: 'image', group: 'Manage', custom: 'media', feature: 'admin.media' },
     { id: 'data', title: 'Data, Reset & Security', icon: 'database', group: 'Manage', custom: 'data' },
   ];
 
@@ -288,6 +314,7 @@
   }
 
   function renderField(f, basePath) {
+    if (f.feature && !featureOn(f.feature)) return renderLocked(f.feature, true);
     const path = f.key != null ? [...basePath, f.key] : basePath;
     const val = f.key != null ? getPath(state.site, path) : undefined;
     const ds = { path: JSON.stringify(path), type: f.type };
@@ -351,9 +378,10 @@
       } catch (err) { toast(err.message, 'err'); }
       e.target.value = '';
     } });
+    const media = featureOn('admin.media');
     const controls = h('div', { class: 'controls' },
-      h('button', { type: 'button', class: 'btn btn-sm', html: svg('upload') + ' Upload', onclick: () => file.click() }),
-      h('button', { type: 'button', class: 'btn btn-sm', html: svg('image') + ' Library', onclick: () => openLibrary((url) => { input.value = url; input.dispatchEvent(new Event('input', { bubbles: true })); }) }),
+      media ? h('button', { type: 'button', class: 'btn btn-sm', html: svg('upload') + ' Upload', onclick: () => file.click() }) : h('span', { class: 'muted small', title: 'Uploads are not in your plan — paste an image URL instead' , html: svg('lock') + ' uploads not in plan' }),
+      media ? h('button', { type: 'button', class: 'btn btn-sm', html: svg('image') + ' Library', onclick: () => openLibrary((url) => { input.value = url; input.dispatchEvent(new Event('input', { bubbles: true })); }) }) : null,
       h('button', { type: 'button', class: 'btn btn-sm', html: svg('x') + ' Clear', onclick: () => { input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true })); } }),
       file,
     );
@@ -420,7 +448,12 @@
     const rerender = () => {
       const arr = getPath(state.site, path) || [];
       wrap.innerHTML = '';
-      wrap.append(h('div', { class: 'lbl', style: 'display:flex;align-items:center;gap:8px' }, h('span', {}, f.label), h('span', { class: 'pill' }, `${arr.length}`), f.help ? h('span', { class: 'help' }, f.help) : null));
+      const lim = featureLimit(f.limit);
+      const visible = arr.filter((it) => it && it.enabled !== false).length;
+      wrap.append(h('div', { class: 'lbl', style: 'display:flex;align-items:center;gap:8px;flex-wrap:wrap' }, h('span', {}, f.label), h('span', { class: 'pill' }, `${arr.length}`),
+        lim ? h('span', { class: `pill ${visible > lim ? 'bad' : ''}`, title: 'Plan limit set by your provider' }, `plan: ${Math.min(visible, lim)} of ${lim} published${visible > lim ? ` — ${visible - lim} hidden` : ''}`) : null,
+        f.help ? h('span', { class: 'help' }, f.help) : null));
+      if (f.softFeature && !featureOn(f.softFeature)) wrap.append(h('div', { class: 'locked locked-compact' }, h('span', { html: svg('lock') }), h('span', {}, f.softNote || `${lockedInfo(f.softFeature).label} is not in your plan.`)));
       const list = h('div', { class: 'list' });
       arr.forEach((item, i) => {
         if (!item || typeof item !== 'object') return;
@@ -573,8 +606,9 @@
     const secSel = h('select', {}, SECTIONS.filter((s) => s.path && s.path.length === 1).map((s) => h('option', { value: s.path[0] }, s.title)));
     const dsSel = h('select', {}, [h('option', { value: 'default' }, 'Default content (Budget Suites)'), h('option', { value: 'blank' }, 'Blank'), ...meta.samples.map((s) => h('option', { value: 'sample:' + s.id }, `Sample: ${s.hotelName || s.id}`))]);
 
+    const lockedCard = (id) => h('div', { class: 'card' }, h('div', { class: 'card-body' }, renderLocked(id)));
     container.append(
-      h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', {}, 'Load a dataset'), h('span', { class: 'spacer' }), dsNote ? h('span', { class: 'pill' }, dsNote) : null),
+      !featureOn('admin.datasets') ? lockedCard('admin.datasets') : h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', {}, 'Load a dataset'), h('span', { class: 'spacer' }), dsNote ? h('span', { class: 'pill' }, dsNote) : null),
         h('div', { class: 'card-body' },
           h('div', { class: 'muted' }, 'Replace everything on the site with one of the bundled datasets. Use this to wipe the sample content before launch, or to restore it.'),
           h('div', { class: 'list-actions' },
@@ -586,7 +620,7 @@
           h('div', { class: 'muted' }, 'Or replace just one section:'),
           h('div', { class: 'list-actions' }, secSel, h('span', {}, 'from'), dsSel, h('button', { type: 'button', class: 'btn btn-sm', onclick: async () => { if (!confirm(`Replace the "${secSel.selectedOptions[0].text}" section?`)) return; try { const r = await api('/reset-section', { method: 'POST', body: { section: secSel.value, mode: dsSel.value } }); state.site = r.site; state.dirty = false; renderStatus(); toast('Section replaced', 'ok'); } catch (e) { toast(e.message, 'err'); } } }, 'Replace section')),
         )),
-      h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', {}, 'Export / import')),
+      !featureOn('admin.exportImport') ? lockedCard('admin.exportImport') : h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', {}, 'Export / import')),
         h('div', { class: 'card-body' },
           h('div', { class: 'list-actions' },
             h('a', { class: 'btn', href: '/admin/api/export', html: svg('download') + ' Download site.json', onclick: (e) => { e.preventDefault(); fetch('/admin/api/export', { headers: { 'X-Requested-With': 'fetch' } }).then((r) => r.blob()).then((b) => { const a = h('a', { href: URL.createObjectURL(b), download: `site-${new Date().toISOString().slice(0, 10)}.json` }); document.body.append(a); a.click(); a.remove(); }); } }),
@@ -594,9 +628,9 @@
           ),
           h('div', { class: 'muted small' }, `Live data file: ${esc(meta.dataDir)}/site.json — every save keeps a backup in ${esc(meta.dataDir)}/backups/ (last 30).`),
         )),
-      h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', {}, `Backups (${meta.backups.length})`)),
+      !featureOn('admin.backups') ? lockedCard('admin.backups') : h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', {}, `Backups (${meta.backups.length})`)),
         h('div', { class: 'card-body' }, meta.backups.length ? h('div', { style: 'overflow:auto' }, h('table', { class: 'tbl' }, h('tbody', {}, meta.backups.slice(0, 30).map((b) => h('tr', {}, h('td', { class: 'mono' }, b), h('td', { style: 'text-align:right' }, h('button', { type: 'button', class: 'btn btn-sm', onclick: async () => { if (!confirm(`Restore ${b}? Current content will itself be backed up first.`)) return; try { const r = await api('/backups/restore', { method: 'POST', body: { name: b } }); state.site = r.site; state.dirty = false; renderStatus(); toast('Backup restored', 'ok'); renderData(container); } catch (e) { toast(e.message, 'err'); } } }, 'Restore'))))))) : h('div', { class: 'muted' }, 'No backups yet — one is created automatically each time you save.'))),
-      h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', {}, 'Admin passphrase'), h('span', { class: 'spacer' }), h('span', { class: 'pill' }, `source: ${meta.passphraseSource}`)),
+      !featureOn('admin.passphrase') ? lockedCard('admin.passphrase') : h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', {}, 'Admin passphrase'), h('span', { class: 'spacer' }), h('span', { class: 'pill' }, `source: ${meta.passphraseSource}`)),
         h('div', { class: 'card-body' },
           meta.passphraseSource.startsWith('environment') ? h('div', { class: 'alert alert-info' }, 'The passphrase is set by the ADMIN_PASSPHRASE environment variable on the server and cannot be changed here.') : (() => {
             const cur = h('input', { type: 'password', autocomplete: 'current-password', placeholder: 'Current passphrase' });
@@ -939,8 +973,8 @@
         h('div', {}, renderField(F.text('metaPixel', 'Meta (Facebook) Pixel ID'), base), hint(an.metaPixel, SEO_PIXEL_RE, 'a numeric ID, 6+ digits')),
         h('div', {}, renderField(F.text('clarity', 'Microsoft Clarity project ID'), base), hint(an.clarity, SEO_CLARITY_RE, 'a 6+ character project ID')),
       ),
-      renderField(F.code('bodyEndHtml', 'Custom HTML before </body>'), base),
-      renderField(F.code('customHeadHtml', 'Custom <head> HTML (advanced)', { help: 'Raw HTML injected into every page\'s <head> — extra verification tags, scripts, etc.' }), ['seo']),
+      renderField(F.code('bodyEndHtml', 'Custom HTML before </body>', { feature: 'seo.customHead' }), base),
+      renderField(F.code('customHeadHtml', 'Custom <head> HTML (advanced)', { help: 'Raw HTML injected into every page\'s <head> — extra verification tags, scripts, etc.', feature: 'seo.customHead' }), ['seo']),
     ];
     body.append(h('div', { class: 'card-body' }, nodes));
   }
@@ -1067,23 +1101,24 @@
 
   const SEO_STEPS = [
     { id: 'basics', label: 'Basics', icon: 'search', render: renderSeoBasics },
-    { id: 'pages', label: 'Pages & Previews', icon: 'layout', render: renderSeoPages },
-    { id: 'social', label: 'Social Cards', icon: 'tag', render: renderSeoSocial },
-    { id: 'schema', label: 'Structured Data', icon: 'code', render: renderSeoSchema },
-    { id: 'local', label: 'Local SEO', icon: 'map', render: renderSeoLocal },
-    { id: 'search', label: 'Search Engines', icon: 'globe', render: renderSeoSearch },
-    { id: 'analytics', label: 'Analytics', icon: 'chart', render: renderSeoAnalytics },
-    { id: 'hosting', label: 'Hosting & Redirects', icon: 'upload', render: renderSeoHosting },
-    { id: 'audit', label: 'Audit & Score', icon: 'alert', render: renderSeoAudit },
+    { id: 'pages', label: 'Pages & Previews', icon: 'layout', render: renderSeoPages, feature: 'seo.pages' },
+    { id: 'social', label: 'Social Cards', icon: 'tag', render: renderSeoSocial, feature: 'seo.social' },
+    { id: 'schema', label: 'Structured Data', icon: 'code', render: renderSeoSchema, feature: 'seo.schema' },
+    { id: 'local', label: 'Local SEO', icon: 'map', render: renderSeoLocal, feature: 'seo.local' },
+    { id: 'search', label: 'Search Engines', icon: 'globe', render: renderSeoSearch, feature: 'seo.search' },
+    { id: 'analytics', label: 'Analytics', icon: 'chart', render: renderSeoAnalytics, feature: 'seo.analytics' },
+    { id: 'hosting', label: 'Hosting & Redirects', icon: 'upload', render: renderSeoHosting, feature: 'seo.hosting' },
+    { id: 'audit', label: 'Audit & Score', icon: 'alert', render: renderSeoAudit, feature: 'seo.audit' },
   ];
 
   function renderSeo(container) {
     seoState.container = container;
     container.innerHTML = '';
     const step = SEO_STEPS.find((s) => s.id === seoState.step) || SEO_STEPS[0];
-    const tabs = h('div', { class: 'seo-tabs' }, SEO_STEPS.map((s) => h('button', { type: 'button', class: 'seo-tab' + (s.id === step.id ? ' active' : ''), onclick: () => { seoState.step = s.id; renderSeo(container); } }, h('span', { html: svg(s.icon) }), h('span', {}, s.label))));
+    const tabs = h('div', { class: 'seo-tabs' }, SEO_STEPS.map((s) => h('button', { type: 'button', class: 'seo-tab' + (s.id === step.id ? ' active' : '') + (featureOn(s.feature) ? '' : ' locked-tab'), title: featureOn(s.feature) ? '' : 'Not in your plan', onclick: () => { seoState.step = s.id; renderSeo(container); } }, h('span', { html: svg(featureOn(s.feature) ? s.icon : 'lock') }), h('span', {}, s.label))));
     const body = h('div', {});
     container.append(h('div', { class: 'seo-wizard' }, tabs, h('div', { class: 'card', style: 'margin-top:14px' }, h('div', { class: 'card-head' }, h('h2', {}, step.label)), body)));
+    if (step.feature && !featureOn(step.feature)) { body.append(h('div', { class: 'card-body' }, renderLocked(step.feature))); return; }
     step.render(body);
   }
 
@@ -1093,9 +1128,10 @@
     app.innerHTML = '';
     const groups = [...new Set(SECTIONS.map((s) => s.group))];
     const sidebar = h('aside', { class: 'sidebar' },
-      h('div', { class: 'brand', html: svg('building') + `<span>${esc(state.site.general.hotelName || 'Hotel')}<small>Site admin</small></span>` }),
-      groups.map((g) => [h('div', { class: 'group' }, g), SECTIONS.filter((s) => s.group === g).map((s) => h('a', { class: 'nav', href: '#' + s.id, dataset: { nav: s.id }, html: svg(s.icon) + `<span>${esc(s.title)}</span>` + (s.id === 'inquiries' ? '<span class="badge hidden" data-inq-badge></span>' : '') }))]),
+      h('div', { class: 'brand', html: svg('building') + `<span>${esc(state.site.general.hotelName || 'Hotel')}<small>Site admin${plan().planName ? ' · ' + esc(plan().planName) + ' plan' : ''}</small></span>` }),
+      groups.map((g) => [h('div', { class: 'group' }, g), SECTIONS.filter((s) => s.group === g).map((s) => h('a', { class: 'nav' + (featureOn(s.feature) ? '' : ' locked-nav'), href: '#' + s.id, dataset: { nav: s.id }, title: featureOn(s.feature) ? '' : 'Not in your plan', html: svg(s.icon) + `<span>${esc(s.title)}</span>` + (s.id === 'inquiries' ? '<span class="badge hidden" data-inq-badge></span>' : '') + (featureOn(s.feature) ? '' : `<span class="nav-lock">${svg('lock')}</span>`) }))]),
       h('div', { class: 'foot' },
+        state.meta && state.meta.isSuper ? h('a', { class: 'btn', href: '/superadmin', html: svg('lock') + ' Superadmin: plan & features' }) : null,
         h('a', { class: 'btn', href: '/', target: '_blank', html: svg('external') + ' View website' }),
         h('form', { method: 'post', action: '/admin/logout' }, h('button', { type: 'submit', class: 'btn btn-block', html: svg('logout') + ' Sign out' }))),
     );
@@ -1133,6 +1169,7 @@
     $('[data-title]').textContent = sec.title;
     const content = $('[data-content]');
     content.innerHTML = '';
+    if (sec.feature && !featureOn(sec.feature)) { content.append(h('div', { class: 'card' }, h('div', { class: 'card-body' }, renderLocked(sec.feature)))); renderStatus(); return; }
     if (sec.custom === 'inquiries') return renderInquiries(content);
     if (sec.custom === 'media') return renderMedia(content);
     if (sec.custom === 'data') return renderData(content);

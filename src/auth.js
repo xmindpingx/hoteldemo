@@ -13,6 +13,10 @@ const store = require('./store');
 
 const DEFAULT_PASSPHRASE = 'hoteldemo';
 const COOKIE_NAME = 'hd_admin';
+// Superadmin = the site vendor. Separate passphrase and cookie; a superadmin session also passes
+// every admin check. Resolution: SUPERADMIN_PASSPHRASE env → data/admin.json superPassphraseHash → default.
+const DEFAULT_SUPER_PASSPHRASE = 'hotelsuper';
+const SUPER_COOKIE_NAME = 'hd_super';
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
 // ---------- passphrase ----------
@@ -50,6 +54,27 @@ function setPassphrase(next) {
   store.saveAdminConfig(cfg);
 }
 
+function checkSuperPassphrase(input) {
+  if (typeof input !== 'string' || !input) return false;
+  if (process.env.SUPERADMIN_PASSPHRASE) return safeEqual(input, process.env.SUPERADMIN_PASSPHRASE);
+  const cfg = store.getAdminConfig();
+  if (cfg.superPassphraseHash) return verifyHash(input, cfg.superPassphraseHash);
+  return safeEqual(input, DEFAULT_SUPER_PASSPHRASE);
+}
+
+function setSuperPassphrase(next) {
+  const cfg = store.getAdminConfig();
+  cfg.superPassphraseHash = hashPassphrase(next);
+  cfg.superPassphraseUpdatedAt = new Date().toISOString();
+  store.saveAdminConfig(cfg);
+}
+
+function superPassphraseSource() {
+  if (process.env.SUPERADMIN_PASSPHRASE) return 'environment (SUPERADMIN_PASSPHRASE)';
+  if (store.getAdminConfig().superPassphraseHash) return 'custom (set in superadmin panel)';
+  return 'default';
+}
+
 function passphraseSource() {
   if (process.env.ADMIN_PASSPHRASE) return 'environment (ADMIN_PASSPHRASE)';
   if (store.getAdminConfig().passphraseHash) return 'custom (set in admin panel)';
@@ -61,21 +86,23 @@ function sign(payload) {
   return crypto.createHmac('sha256', store.getSecret()).update(payload).digest('hex');
 }
 
-function issueToken() {
+function issueToken(role = 'admin') {
   const exp = Date.now() + SESSION_TTL_MS;
   const nonce = crypto.randomBytes(8).toString('hex');
-  const payload = `${exp}.${nonce}`;
+  const payload = `${exp}.${nonce}.${role}`;
   return `${payload}.${sign(payload)}`;
 }
 
-function verifyToken(token) {
+/** Returns the role ('admin' | 'super') carried by a valid token, or false. */
+function verifyToken(token, role = 'admin') {
   if (typeof token !== 'string') return false;
   const parts = token.split('.');
-  if (parts.length !== 3) return false;
-  const [exp, nonce, sig] = parts;
+  if (parts.length !== 4) return false;
+  const [exp, nonce, r, sig] = parts;
+  if (r !== role) return false;
   if (!/^\d+$/.test(exp) || Number(exp) < Date.now()) return false;
-  const expected = sign(`${exp}.${nonce}`);
-  return safeEqual(sig, expected);
+  const expected = sign(`${exp}.${nonce}.${r}`);
+  return safeEqual(sig, expected) ? r : false;
 }
 
 function cookieOptions(req) {
@@ -96,8 +123,29 @@ function logout(req, res) {
   res.clearCookie(COOKIE_NAME, { path: '/' });
 }
 
+function isSuper(req) {
+  return Boolean(verifyToken(req.cookies && req.cookies[SUPER_COOKIE_NAME], 'super'));
+}
+
+/** Admin access: the admin cookie, or a superadmin session (the vendor can always open the admin). */
 function isAuthed(req) {
-  return verifyToken(req.cookies && req.cookies[COOKIE_NAME]);
+  return Boolean(verifyToken(req.cookies && req.cookies[COOKIE_NAME], 'admin')) || isSuper(req);
+}
+
+function loginSuper(req, res) {
+  res.cookie(SUPER_COOKIE_NAME, issueToken('super'), cookieOptions(req));
+}
+
+function logoutSuper(req, res) {
+  res.clearCookie(SUPER_COOKIE_NAME, { path: '/' });
+}
+
+function requireSuper(req, res, next) {
+  if (isSuper(req)) return next();
+  if ((req.originalUrl || '').startsWith('/superadmin/api') || req.xhr || (req.get('accept') || '').includes('application/json')) {
+    return res.status(401).json({ error: 'Not signed in as superadmin' });
+  }
+  return res.redirect('/superadmin/login');
 }
 
 function requireAdmin(req, res, next) {
@@ -138,7 +186,16 @@ function requireFetchHeader(req, res, next) {
 
 module.exports = {
   DEFAULT_PASSPHRASE,
+  DEFAULT_SUPER_PASSPHRASE,
   COOKIE_NAME,
+  SUPER_COOKIE_NAME,
+  checkSuperPassphrase,
+  setSuperPassphrase,
+  superPassphraseSource,
+  isSuper,
+  loginSuper,
+  logoutSuper,
+  requireSuper,
   checkPassphrase,
   setPassphrase,
   passphraseSource,

@@ -18,7 +18,7 @@ const PAGE_KEYS = ['home', 'suites', 'amenities', 'dining', 'area', 'gallery', '
 const PAGE_PATHS = { home: '/', suites: '/suites', amenities: '/amenities', dining: '/dining', area: '/area', gallery: '/gallery', reviews: '/reviews', contact: '/contact' };
 const PAGE_LABELS = { home: 'Home', suites: 'Suites & Rooms', amenities: 'Amenities', dining: 'Dining', area: 'Local Area', gallery: 'Gallery', reviews: 'Guest Reviews', contact: 'Contact' };
 // Section key that controls whether a page exists at all (enabled === false → page redirects home)
-const PAGE_SECTION = { suites: 'rooms', amenities: 'amenities', dining: 'dining', area: 'area', gallery: 'gallery', reviews: 'reviews' };
+const PAGE_SECTION = { suites: 'rooms', amenities: 'amenities', dining: 'dining', area: 'area', gallery: 'gallery', reviews: 'reviews', contact: 'contact' };
 
 const SCHEMA_TYPES = ['Hotel', 'Motel', 'LodgingBusiness', 'BedAndBreakfast', 'Hostel', 'Resort', 'Campground'];
 

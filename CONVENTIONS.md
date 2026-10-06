@@ -22,8 +22,9 @@ No database, no build step, no bundler. Dependencies: express, ejs, multer, comp
 1. Only create or edit files inside this repo. Never write to `/etc`, `/www`, `~/.cloudflared`,
    `/home/dad/wwwhotel/.env`, or any absolute path outside the repo.
 2. Never read, print, or edit `data/site.json`, `data/inquiries.json`, `data/admin.json`,
-   `data/.secret`, `data/backups/`, `public/uploads/`, or any `.env`. Live content is edited in
-   `/admin`; defaults are edited in `data/defaults.json`, `data/blank.json`, `data/samples/*.json`.
+   `data/features.json`, `data/.secret`, `data/backups/`, `public/uploads/`, or any `.env`. Live
+   content is edited in `/admin`, plan/feature flags in `/superadmin`; defaults are edited in
+   `data/defaults.json`, `data/blank.json`, `data/samples/*.json`.
 3. Never run `pm2`, `sudo`, `systemctl`, `npm install`, `git push`, or `rm -rf`. When a change
    needs one of those (new dependency, restart), finish the edit and then tell the human the exact
    command — normally `bash scripts/deploy.sh --local` (backs up, tests, restarts, health-checks).
@@ -51,6 +52,20 @@ No database, no build step, no bundler. Dependencies: express, ejs, multer, comp
   `public/admin/admin.js`, then render it in the view. List those four places in your plan.
 - Keep `src/auth.js` behavior intact: passphrase check, HMAC cookie, rate limit, CSRF header guard.
   Every `/admin` page and `/admin/api/*` route (except login) must stay behind `auth.requireAdmin`.
+  There is a second, separate role: `/superadmin` (the site vendor, not the hotel) is its own
+  passphrase + cookie, gated by `auth.requireSuper`, and controls which features are sold/enabled
+  via `src/features.js` → `data/features.json`. A superadmin session also passes `auth.isAuthed`,
+  so the vendor never needs the hotel's own passphrase to open `/admin`.
+- Feature gating: `features.apply(site)` is the ONE place that turns an admin-set site object into
+  what the public and the SEO engine actually see when a feature is off (sections hidden, lists
+  capped to plan limits, nav/footer links to disabled pages stripped). Every place that serves the
+  public site or previews/audits it must call `features.apply(...)`, never raw `store.getSite()`.
+  Gating an `/admin/api/*` route itself (export, backups, uploads, inquiries, SEO steps, etc.) uses
+  `features.requireFeature('some.id')` as middleware, and the matching admin UI field/section in
+  `public/admin/admin.js` gets a `feature:` (or `limit:`) key so it renders a locked panel instead
+  of a dead form. Adding a new gated feature means: add it to `FEATURES` in `src/features.js`
+  (and to `apply()` if it changes what ships to the public), gate the route with `requireFeature`,
+  and tag the admin-UI field/section with `feature:`/`limit:` — list all three in your plan.
 - SEO lives in `src/seo.js`. Add to it rather than scattering `<meta>` logic in views. Its constants
   are mirrored in `public/admin/admin.js` (`SEO_*`) — change both in the same commit (`docs/SEO-ENGINE.md`).
 - Never invent facts for the site: no made-up ratings, review counts, statistics, awards, distances
@@ -89,10 +104,13 @@ No database, no build step, no bundler. Dependencies: express, ejs, multer, comp
 ## Verification
 
 - After JS edits, `/lint` runs `node --check` automatically. Before you say a change is done, run
-  `/test`: `scripts/aider-test.sh` (syntax, module load in a temp DATA_DIR, every EJS view compiles)
-  then `scripts/smoke.sh` (boots a throwaway server on a free port with temp data, requests every
-  route, logs in, calls the SEO preview and audit API, shuts down). `/test` never touches live data
-  or pm2, so you may run it yourself as often as you like. A `FAIL` line names the route or API.
+  `/test`: `scripts/aider-test.sh` (syntax, module load in a temp DATA_DIR, every EJS view compiles),
+  `scripts/smoke.sh` (boots a throwaway server on a free port with temp data, requests every route,
+  logs in, calls the SEO preview and audit API, shuts down), then `scripts/smoke-superadmin.sh`
+  (superadmin login, toggling features on/off and checking the public site + hotel admin + sitemap
+  react correctly, the upload size limit, and both passphrase-reset flows). All three use a
+  throwaway DATA_DIR and never touch live data or pm2, so you may run them yourself as often as you
+  like. A `FAIL` line names the route or API.
 - The human then runs: `pm2 restart hoteldemo && pm2 logs hoteldemo --lines 30` and checks
   `curl -I http://127.0.0.1:8097/`. Never run those yourself.
 

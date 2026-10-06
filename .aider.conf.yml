@@ -32,7 +32,7 @@ lint-cmd:
   - "bash: bash -n"
 # /test = syntax/load/EJS checks, then boot a throwaway server copy on a free port with temp data and
 # hit every route + the admin API (scripts/smoke.sh). Never touches pm2 or data/.
-test-cmd: "bash scripts/aider-test.sh && bash scripts/smoke.sh"
+test-cmd: "bash scripts/aider-test.sh && bash scripts/smoke.sh && bash scripts/smoke-superadmin.sh"
 auto-test: false
 
 # ---- git --------------------------------------------------------------------------------

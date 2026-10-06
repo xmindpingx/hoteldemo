@@ -2,12 +2,14 @@
 const express = require('express');
 const store = require('./store');
 const seo = require('./seo');
+const features = require('./features');
 
 const router = express.Router();
 
 // Attach the live site to every request (cheap: cached in memory)
 router.use((req, res, next) => {
-  res.locals.site = store.getSite();
+  // the site as entitled by the superadmin's feature switches (disabled features are switched off in the data)
+  res.locals.site = features.apply(store.getSite());
   res.locals.path = req.path;
   res.locals.siteUrl = seo.baseUrl(res.locals.site, req);
   next();
@@ -76,7 +78,7 @@ router.get('/reviews', sectionGuard('reviews'), (req, res) => {
   res.render('reviews', { page: 'reviews', title });
 });
 
-router.get('/contact', (req, res) => {
+router.get('/contact', sectionGuard('contact'), (req, res) => {
   const title = res.locals.site.contact.heading || 'Contact';
   setMeta(res, { page: 'contact', title });
   res.render('contact', {
@@ -90,7 +92,7 @@ router.get('/contact', (req, res) => {
 
 // simple per-IP throttle for the contact form
 const recent = new Map();
-router.post('/contact', (req, res) => {
+router.post('/contact', sectionGuard('contact'), (req, res) => {
   const site = res.locals.site;
   const b = req.body || {};
   if (!site.contact.formEnabled) return res.redirect('/contact');

@@ -20,7 +20,7 @@ done
 
 tmp=$(mktemp -d)
 DATA_DIR="$tmp" node -e "
-  for (const m of ['./src/store','./src/auth','./src/helpers','./src/icons','./src/seo','./src/public','./src/admin']) require(m);
+  for (const m of ['./src/store','./src/auth','./src/helpers','./src/icons','./src/seo','./src/public','./src/admin','./src/features','./src/superadmin']) require(m);
   console.log('src/ modules load OK');
 " || { echo "MODULE LOAD FAILED"; fail=1; }
 rm -rf "$tmp"

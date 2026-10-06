@@ -13,8 +13,10 @@ const store = require('./src/store');
 const helpers = require('./src/helpers');
 const { icon } = require('./src/icons');
 const seo = require('./src/seo');
+const features = require('./src/features');
 const publicRouter = require('./src/public');
 const adminRouter = require('./src/admin');
+const superRouter = require('./src/superadmin');
 
 const PORT = Number(process.env.PORT) || 8097;
 const HOST = process.env.HOST || '127.0.0.1';
@@ -39,22 +41,23 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  if (req.path.startsWith('/admin')) res.setHeader('Cache-Control', 'no-store');
+  if (req.path.startsWith('/admin') || req.path.startsWith('/superadmin')) res.setHeader('Cache-Control', 'no-store');
   next();
 });
 
 // SEO redirect rules, https/canonical-host enforcement, trailing-slash cleanup — before static
 // files and routing so a redirected URL never has to resolve to real content first.
-app.use(seo.middleware(store.getSite));
+app.use(seo.middleware(() => features.apply(store.getSite())));
 
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0, etag: true, redirect: false }));
 
+app.use('/superadmin', superRouter);
 app.use('/admin', adminRouter);
 app.use('/', publicRouter);
 
 // 404
 app.use((req, res) => {
-  const site = store.getSite();
+  const site = features.apply(store.getSite());
   const path = req.path;
   const meta = seo.pageMeta(site, { path, page: '404', title: 'Page not found', req });
   meta.noindex = true;

@@ -7,6 +7,8 @@ data/site.json.tmp
 data/inquiries.json
 data/inquiries.json.tmp
 data/admin.json
+data/features.json
+data/features.json.tmp
 data/.secret
 data/backups/
 
