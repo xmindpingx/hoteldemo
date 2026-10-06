@@ -32,6 +32,13 @@ auto-commits: true
 dirty-commits: true
 attribute-author: true
 attribute-committer: true
+gitignore: false               # .aider.* files are tracked in this repo on purpose; do not add them to .gitignore
+# One-line commit messages a small local model can get right every time.
+commit-prompt: |
+  Write the git commit message for the diff the user sends.
+  Output exactly one line, at most 72 characters, imperative mood, no quotes, no markdown, no trailing period.
+  Start with the area and a colon, using one of: ui, css, server, admin, api, seo, docs, scripts, data.
+  Example: admin: fix room status toggle not saving to data store
 
 # ---- UI ---------------------------------------------------------------------------------
 dark-mode: true
@@ -39,6 +46,7 @@ pretty: true
 stream: true
 check-update: false            # offline box; do not phone home for aider updates on every launch
 show-model-warnings: false     # local Ollama models are not in aider's catalog; the warning is noise
-suggest-shell-commands: true   # let the model propose e.g. `node scripts/seo-audit.mjs` — still y/n gated
+suggest-shell-commands: false  # the human runs commands deliberately (/run …); the model only names them
+analytics-disable: true
 # Commit messages: reuse the solo model (a second model would not fit in VRAM next to the 14b).
 weak-model: ollama_chat/qwen2.5-coder:14b
