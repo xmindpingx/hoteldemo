@@ -8,6 +8,7 @@ and the table of what you may run yourself versus hand to the human.
 On-demand references — ask the human to `/read` the one that matches the task before planning:
 - `docs/GODADDY-CUTOVER.md` — domain, DNS, GoDaddy, nameservers, Cloudflare, "go live", redirects from an old site.
 - `docs/SEO-ENGINE.md` — anything touching `src/seo.js`, the SEO Wizard, titles/descriptions, JSON-LD, sitemap, the audit.
+- `docs/TASKS.md` — recipes: "is this even a code change?", add a field / page / home section / icon, site down, copy rules.
 
 ## What this is
 
@@ -87,9 +88,11 @@ No database, no build step, no bundler. Dependencies: express, ejs, multer, comp
 
 ## Verification
 
-- After JS edits, `/lint` runs `node --check` automatically. Before you say a change is done, ask
-  the human to run `/test` (runs `scripts/aider-test.sh`: syntax check, module load in a temp
-  DATA_DIR, every EJS view compiles). `/test` never touches live data or pm2.
+- After JS edits, `/lint` runs `node --check` automatically. Before you say a change is done, run
+  `/test`: `scripts/aider-test.sh` (syntax, module load in a temp DATA_DIR, every EJS view compiles)
+  then `scripts/smoke.sh` (boots a throwaway server on a free port with temp data, requests every
+  route, logs in, calls the SEO preview and audit API, shuts down). `/test` never touches live data
+  or pm2, so you may run it yourself as often as you like. A `FAIL` line names the route or API.
 - The human then runs: `pm2 restart hoteldemo && pm2 logs hoteldemo --lines 30` and checks
   `curl -I http://127.0.0.1:8097/`. Never run those yourself.
 

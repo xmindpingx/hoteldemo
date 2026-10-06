@@ -30,8 +30,9 @@ auto-lint: true
 lint-cmd:
   - "javascript: node --check"
   - "bash: bash -n"
-# /test = syntax-check the whole server + confirm the data store loads. Never restarts pm2.
-test-cmd: "bash scripts/aider-test.sh"
+# /test = syntax/load/EJS checks, then boot a throwaway server copy on a free port with temp data and
+# hit every route + the admin API (scripts/smoke.sh). Never touches pm2 or data/.
+test-cmd: "bash scripts/aider-test.sh && bash scripts/smoke.sh"
 auto-test: false
 
 # ---- git --------------------------------------------------------------------------------

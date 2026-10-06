@@ -57,6 +57,14 @@ if [ -f .git/index.lock ]; then
   warn ".git/index.lock exists (stale lock from an interrupted git run). Removing it."
   rm -f .git/index.lock
 fi
+# ---- where does the live site stand right now? (for the human; not sent to the model) ------
+if [ -x scripts/health.sh ] || [ -f scripts/health.sh ]; then
+  health_out=$(bash scripts/health.sh --quick 2>/dev/null)
+  say "live site: $(printf '%s\n' "$health_out" | grep -E '^(HEALTHY|PROBLEMS FOUND)$' || echo 'health check did not finish')"
+  printf '%s\n' "$health_out" | grep '^  FAIL' | sed 's/^/           /'
+  say "tip: /test runs the offline checks + a throwaway smoke server; docs/OPERATIONS.md is already in the chat"
+fi
+
 # ---- wait for the GPU to be free ---------------------------------------------------------
 # Both aider models need ~14.9 GB of the 16 GB together. If something else (ComfyUI, LM Studio,
 # another Ollama model) holds VRAM, wait for it to finish instead of launching into a swap-fest.

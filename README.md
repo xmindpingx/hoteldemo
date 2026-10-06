@@ -178,6 +178,7 @@ scripts/
   deploy.sh               backup → pull → install → test → pm2 restart → health (human runs it)
   health.sh               read-only health check (pm2, local routes, public URL, SEO audit)
   backup.sh               full content backup / --restore (data/ + uploads)
+  smoke.sh                throwaway server on a free port: every route + admin API (aider's /test)
   seo-audit.mjs           CLI version of the admin Audit & Score tab
   cutover-check.mjs       DNS / https / canonical checks for a domain move
   site-url.mjs            show or set the canonical Site URL
@@ -186,6 +187,7 @@ docs/
   OPERATIONS.md           runbook: routine, deploy loop, troubleshooting, who-does-what
   GODADDY-CUTOVER.md      moving the site onto the hotel's real domain (GoDaddy → Cloudflare)
   SEO-ENGINE.md           how src/seo.js and the SEO Wizard fit together, how to extend them
+  TASKS.md                recipes for common change requests
 ```
 
 ## Public routes

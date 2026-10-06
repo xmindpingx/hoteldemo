@@ -51,7 +51,9 @@ Suggested cron (human installs with `crontab -e`):
 ## Shipping a change (the normal loop)
 
 1. aider edits files in the repo (auto-commits each change).
-2. aider runs `/test` (= `scripts/aider-test.sh`: syntax, module load, EJS compile). Fix until it passes.
+2. aider runs `/test` (= `scripts/aider-test.sh` + `scripts/smoke.sh`: syntax, module load, EJS compile,
+   then a throwaway server copy on a free port with temp data — every route, login, SEO API). Fix until
+   it prints `SMOKE PASSED`.
 3. aider tells the human: **run `bash scripts/deploy.sh --local`**. That script backs up, installs
    deps if `package.json` changed, re-runs the tests, restarts pm2, and runs the health check — and
    stops at the first failure, so a broken edit never replaces the running site.
@@ -104,7 +106,7 @@ Suggested cron (human installs with `crontab -e`):
 | aider may do on its own | aider must hand to the human (say the exact command) |
 |---|---|
 | edit code/views/admin UI/default data in the repo | `bash scripts/deploy.sh …`, `pm2 …`, `npm install`, `git push` |
-| `/run bash scripts/aider-test.sh` (= `/test`) | `bash scripts/backup.sh` / `--restore` |
+| `/test` (= `scripts/aider-test.sh` + `scripts/smoke.sh`) | `bash scripts/backup.sh` / `--restore` |
 | `/run node scripts/seo-audit.mjs` (read-only) | `node scripts/site-url.mjs <url>` (writes live content) |
 | `/run bash scripts/health.sh --quick` (read-only) | `node scripts/cloudflare-route.mjs …` (changes DNS/tunnel) |
 | `/run node scripts/cutover-check.mjs <domain>` (read-only) | anything in `/admin`, GoDaddy, Cloudflare, Search Console |
