@@ -143,6 +143,10 @@ function normalize(site) {
     });
   }
 
+  // A malformed import (or a hand-edited PUT /admin/api/site payload) can put a null/non-object entry
+  // in a list that the code below assumes is all plain objects — drop those rather than crash on
+  // `room.slug`/`c.items` access.
+  out.rooms.items = out.rooms.items.filter(isPlainObject);
   const seen = new Set();
   out.rooms.items.forEach((room) => {
     let slug = slugify(room.slug || room.name);
@@ -156,6 +160,7 @@ function normalize(site) {
     room.sqft = Number(room.sqft) || 0;
   });
 
+  out.amenities.categories = out.amenities.categories.filter(isPlainObject);
   out.amenities.categories.forEach((c) => { if (!Array.isArray(c.items)) c.items = []; });
   // SEO: make sure every known page has an override slot, tidy the site URL and redirect rules.
   if (blank.seo && blank.seo.pages) {
@@ -166,7 +171,15 @@ function normalize(site) {
   if (out.seo.siteUrl && !/^https?:\/\//i.test(out.seo.siteUrl)) out.seo.siteUrl = 'https://' + out.seo.siteUrl;
   out.seo.redirects = out.seo.redirects
     .filter((r) => isPlainObject(r))
-    .map((r) => ({ ...r, from: normalizePath(r.from), to: String(r.to || '').trim(), type: Number(r.type) === 302 ? 302 : 301 }));
+    .map((r) => {
+      const from = normalizePath(r.from);
+      // `to` may be an external absolute URL (never run through normalizePath, which would mangle
+      // "https://…" into "/https://…"); only strip a trailing slash on an internal relative path, so
+      // "/foo" -> "/foo/" doesn't fight the trailing-slash-redirect step into an infinite loop.
+      let to = String(r.to || '').trim();
+      if (to.startsWith('/') && to.length > 1) to = to.replace(/\/+$/, '');
+      return { ...r, from, to, type: Number(r.type) === 302 ? 302 : 301 };
+    });
   if (!Array.isArray(out.layout.homeOrder)) out.layout.homeOrder = clone(blank.layout.homeOrder);
   if (!Array.isArray(out.area.categories)) out.area.categories = clone(blank.area.categories);
   out.meta = out.meta || {};
@@ -226,7 +239,9 @@ function resetSection(section, mode = 'default') {
   if (mode === 'blank') src = loadBlank();
   else if (mode.startsWith('sample:')) src = loadSample(mode.slice(7));
   else src = loadDefaults();
-  if (!src || !(section in src)) throw new Error(`Unknown section: ${section}`);
+  // hasOwnProperty, not `in`: `in` also matches inherited properties like "constructor" or "toString",
+  // letting those slip past the "Unknown section" check instead of being rejected by it.
+  if (!src || !Object.prototype.hasOwnProperty.call(src, section)) throw new Error(`Unknown section: ${section}`);
   const site = clone(getSite());
   site[section] = clone(src[section]);
   return saveSite(site);
@@ -283,23 +298,35 @@ function clearInquiries() {
 }
 
 // ---------- admin config & secret ----------
+// Both are read on every authenticated request (auth.js signs/verifies session tokens with them),
+// so they are cached in memory rather than hitting the filesystem synchronously per request.
+let adminConfigCache = null;
+
+// Returns a COPY: callers (auth.js) mutate the result in place before calling saveAdminConfig(), and
+// if that write throws (disk full, permissions), the in-memory cache must stay what is actually on
+// disk rather than the half-applied mutation.
 function getAdminConfig() {
-  return readJson(ADMIN_FILE, {});
+  if (!adminConfigCache) adminConfigCache = readJson(ADMIN_FILE, {});
+  return clone(adminConfigCache);
 }
 
 function saveAdminConfig(cfg) {
-  writeJsonAtomic(ADMIN_FILE, cfg);
+  writeJsonAtomic(ADMIN_FILE, cfg); // throws before the cache is touched if the write fails
+  adminConfigCache = clone(cfg);
 }
 
+let secretCache = null;
+
 function getSecret() {
-  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+  if (secretCache) return secretCache;
+  if (process.env.SESSION_SECRET) return (secretCache = process.env.SESSION_SECRET);
   try {
     const s = fs.readFileSync(SECRET_FILE, 'utf8').trim();
-    if (s.length >= 32) return s;
+    if (s.length >= 32) return (secretCache = s);
   } catch (_) { /* generate below */ }
   const s = crypto.randomBytes(32).toString('hex');
   fs.writeFileSync(SECRET_FILE, s, { mode: 0o600 });
-  return s;
+  return (secretCache = s);
 }
 
 module.exports = {

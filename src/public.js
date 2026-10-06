@@ -92,6 +92,18 @@ router.get('/contact', sectionGuard('contact'), (req, res) => {
 
 // simple per-IP throttle for the contact form
 const recent = new Map();
+const THROTTLE_WINDOW_MS = 10 * 60 * 1000;
+// Sweep stale IPs periodically so `recent` doesn't grow without bound on a long-running process —
+// without this, every distinct visitor IP that ever submitted stays in the map forever.
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, hits] of recent) {
+    const live = hits.filter((t) => now - t < THROTTLE_WINDOW_MS);
+    if (live.length) recent.set(ip, live);
+    else recent.delete(ip);
+  }
+}, THROTTLE_WINDOW_MS).unref();
+
 router.post('/contact', sectionGuard('contact'), (req, res) => {
   const site = res.locals.site;
   const b = req.body || {};
@@ -100,11 +112,15 @@ router.post('/contact', sectionGuard('contact'), (req, res) => {
 
   const ip = req.ip;
   const now = Date.now();
-  const hits = (recent.get(ip) || []).filter((t) => now - t < 10 * 60 * 1000);
+  // Count this attempt against the throttle before any validation, so repeated invalid submissions
+  // (missing name, malformed email) can't bypass the limit by never reaching the success path.
+  const hits = (recent.get(ip) || []).filter((t) => now - t < THROTTLE_WINDOW_MS);
   if (hits.length >= 5) {
     setMeta(res, { page: 'contact', title: site.contact.heading });
     return res.status(429).render('contact', { page: 'contact', title: site.contact.heading, prefill: b, sent: false, error: 'Too many requests — please try again in a few minutes or call us.' });
   }
+  hits.push(now);
+  recent.set(ip, hits);
 
   const name = String(b.name || '').trim().slice(0, 120);
   const email = String(b.email || '').trim().slice(0, 160);
@@ -114,8 +130,6 @@ router.post('/contact', sectionGuard('contact'), (req, res) => {
     return res.status(400).render('contact', { page: 'contact', title: site.contact.heading, prefill: b, sent: false, error: 'Please enter your name and a valid email address.' });
   }
 
-  hits.push(now);
-  recent.set(ip, hits);
   store.addInquiry({
     name,
     email,

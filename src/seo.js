@@ -417,13 +417,21 @@ function parseRobots(text) {
   }
   return groups;
 }
-/** True when search engines in general (User-agent: *) are told Disallow: / */
+/** A rule value of "/" or "/*" matches every path — the two spellings people actually use for "block everything". */
+const blocksRoot = (v) => v === '/' || v === '/*';
+
+/** True when a rule group disallows everything AND nothing of equal specificity allows it back (Allow beats Disallow of the same length — the convention Google and most crawlers use). */
+function groupBlocksAll(g) {
+  return g.rules.some(([k, v]) => k === 'disallow' && blocksRoot(v)) && !g.rules.some(([k, v]) => k === 'allow' && blocksRoot(v));
+}
+
+/** True when search engines in general (User-agent: *) are told Disallow: / (or /*) with no Allow: / undoing it. */
 function robotsBlocksAll(text) {
-  return parseRobots(text).some((g) => g.agents.includes('*') && g.rules.some(([k, v]) => k === 'disallow' && v === '/'));
+  return parseRobots(text).some((g) => g.agents.includes('*') && groupBlocksAll(g));
 }
 /** Names of specific crawlers that are fully blocked (e.g. Cloudflare's AI-bot list). */
 function robotsBlockedAgents(text) {
-  return [...new Set(parseRobots(text).filter((g) => !g.agents.includes('*') && g.rules.some(([k, v]) => k === 'disallow' && v === '/')).flatMap((g) => g.agents))];
+  return [...new Set(parseRobots(text).filter((g) => !g.agents.includes('*') && groupBlocksAll(g)).flatMap((g) => g.agents))];
 }
 
 function robotsTxt(site, req) {
@@ -433,13 +441,17 @@ function robotsTxt(site, req) {
   const lines = ['User-agent: *'];
   if (seo.robots.index === false) lines.push('Disallow: /');
   else { lines.push('Disallow: /admin', 'Disallow: /admin/', 'Allow: /'); }
-  if (seo.sitemap.enabled !== false && base) lines.push('', `Sitemap: ${base}/sitemap.xml`);
+  // no point advertising a sitemap full of URLs the line above just told every crawler to ignore
+  if (seo.robots.index !== false && seo.sitemap.enabled !== false && base) lines.push('', `Sitemap: ${base}/sitemap.xml`);
   return lines.join('\n') + '\n';
 }
 
 /** Every indexable URL with its sitemap attributes. */
 function sitemapEntries(site, req) {
   const seo = site.seo, sm = seo.sitemap;
+  // a site-wide noindex means nothing here is meant to be indexable — an empty sitemap, not one
+  // advertising URLs that robots.txt (above) just told every crawler to ignore
+  if (seo.robots && seo.robots.index === false) return [];
   const base = baseUrl(site, req);
   const lastmod = site.meta && site.meta.updatedAt ? String(site.meta.updatedAt).slice(0, 10) : new Date().toISOString().slice(0, 10);
   const freq = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never'].includes(sm.changefreq) ? sm.changefreq : 'weekly';

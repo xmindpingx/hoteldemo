@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const express = require('express');
 const multer = require('multer');
 const store = require('./store');
@@ -26,7 +27,10 @@ const upload = multer({
     filename: (req, file, cb) => {
       const ext = ALLOWED[file.mimetype] || path.extname(file.originalname).toLowerCase() || '.bin';
       const base = path.basename(file.originalname, path.extname(file.originalname)).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'image';
-      cb(null, `${Date.now().toString(36)}-${base}${ext}`);
+      // Timestamp alone collides: two files with the same sanitized name (e.g. "Room.JPG" vs "room.jpg")
+      // uploaded in the same millisecond — easy in one multi-file admin upload — would overwrite each other.
+      const unique = crypto.randomBytes(4).toString('hex');
+      cb(null, `${Date.now().toString(36)}-${unique}-${base}${ext}`);
     },
   }),
   limits: { fileSize: 12 * 1024 * 1024, files: 10 },
