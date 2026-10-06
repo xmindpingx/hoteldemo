@@ -14,7 +14,7 @@
 set -uo pipefail
 
 PROJECT=/home/dad/wwwhotel/hoteldemosite
-VENV=/home/dad/ai-stacks/stacks/venvLM
+VENV=/data/venvs/aider   # venvs consolidated 2026-10-05 (old venvLM path is a symlink here)
 OLLAMA=http://127.0.0.1:11434
 ARCHITECT=ollama_chat/gemma4:12b
 EDITOR_MODEL=ollama_chat/qwen2.5-coder:7b-instruct
@@ -106,8 +106,13 @@ if command -v rocm-smi >/dev/null 2>&1 && gpu_busy; then
       sleep 15; waited=$((waited+15))
       [ $((waited % 60)) -eq 0 ] && say "still waiting (${waited}s): $(vram_used_mib) MiB in use — ollama:[$(others_names)] pids:[$(other_pids)]"
     done
-    if gpu_busy; then warn "gave up after $((GPU_WAIT_MAX/60)) min; launching anyway — expect Ollama to swap models (slower)."
-    else say "GPU is free ($(vram_used_mib) MiB in use) after ${waited}s"; fi
+    if gpu_busy; then
+      warn "gave up waiting after $((GPU_WAIT_MAX/60)) min -- still tight"
+      source /home/dad/bin/aider-gpu-guard.sh
+      gpu_guard "$OLLAMA" "" "$A_NAME" "$E_NAME" || exit 1
+    else
+      say "GPU is free ($(vram_used_mib) MiB in use) after ${waited}s"
+    fi
   else
     warn "not waiting (--no-wait / GPU_WAIT_MAX=0); expect Ollama to swap models (slower) until that is freed."
   fi
@@ -160,4 +165,4 @@ trap cleanup EXIT
 
 # ---- run aider (models, edit formats and context limits come from ~/.aider.* files) ----
 say "starting aider in $PROJECT"
-aider "$@"
+aider --read /home/dad/AAAaiderstacks/PORTS.md "$@"
