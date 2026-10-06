@@ -25,9 +25,14 @@ else
 fi
 
 echo "== local server 127.0.0.1:$PORT"
-for p in / /suites /amenities /contact /robots.txt /sitemap.xml /admin/login; do
+for p in / /suites /amenities /contact /robots.txt /sitemap.xml /admin/login /superadmin/login; do
   code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 -H 'x-seo-audit: 1' "http://127.0.0.1:$PORT$p")
-  if [ "$code" = "200" ]; then ok "$p → 200"; else bad "$p → ${code:-no response}"; fi
+  if [ "$code" = "200" ]; then ok "$p → 200"
+  elif [ "$code" = "302" ] && [[ "$p" =~ ^/(suites|amenities|contact)$ ]]; then
+    # a content page that is switched off (hotel admin or /superadmin plan) redirects home by design
+    loc=$(curl -s -o /dev/null -w '%{redirect_url}' --max-time 8 "http://127.0.0.1:$PORT$p")
+    if [[ "$loc" == */ ]]; then ok "$p → 302 to / (page switched off in admin/superadmin — not published)"; else bad "$p → 302 to $loc"; fi
+  else bad "$p → ${code:-no response}"; fi
 done
 # admin API must stay locked
 code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "http://127.0.0.1:$PORT/admin/api/site")
