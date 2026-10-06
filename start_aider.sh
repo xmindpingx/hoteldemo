@@ -33,6 +33,7 @@ A_NAME=${ARCHITECT#*/}; E_NAME=${EDITOR_MODEL#*/}   # strip the ollama_chat/ pre
 
 say()  { printf '\033[1;34m[start_aider]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[start_aider] WARNING:\033[0m %s\n' "$*"; }
+shout(){ printf '\033[1;41;37m[start_aider] %s\033[0m\n' "$*"; }
 die()  { printf '\033[1;31m[start_aider] ERROR:\033[0m %s\n' "$*"; exit 1; }
 
 cd "$PROJECT" || die "cannot cd to $PROJECT"
@@ -129,10 +130,31 @@ else
   esac
 fi
 
+START_SHA=$(git rev-parse HEAD 2>/dev/null || echo "")
+
 cleanup() {
+  local rc=$?
   say "unloading models to free VRAM ..."
-  curl -s --max-time 30 "$OLLAMA/api/generate" -d "{\"model\":\"$A_NAME\",\"keep_alive\":0}" >/dev/null
-  curl -s --max-time 30 "$OLLAMA/api/generate" -d "{\"model\":\"$E_NAME\",\"keep_alive\":0}" >/dev/null
+  curl -s --max-time 30 "$OLLAMA/api/generate" -d "{\"model\":\"$A_NAME\",\"keep_alive\":0}" >/dev/null 2>&1
+  curl -s --max-time 30 "$OLLAMA/api/generate" -d "{\"model\":\"$E_NAME\",\"keep_alive\":0}" >/dev/null 2>&1
+
+  local end_sha changed dirty
+  end_sha=$(git rev-parse HEAD 2>/dev/null || echo "")
+  changed=""
+  if [ -n "$START_SHA" ] && [ -n "$end_sha" ] && [ "$end_sha" != "$START_SHA" ]; then
+    changed=$(git diff --name-only "$START_SHA" "$end_sha" -- . ':!tests' 2>/dev/null)
+  fi
+  dirty=$(git status --porcelain 2>/dev/null)
+  if [ -n "$changed" ] || [ -n "$dirty" ]; then
+    echo
+    shout "FILES CHANGED THIS SESSION — remember to deploy:"
+    { [ -n "$changed" ] && echo "$changed"; [ -n "$dirty" ] && echo "$dirty" | awk '{print $2}'; } \
+      | sort -u | sed 's/^/    /'
+    shout "hotel demo: verify at hoteldemosite URL; JS changes may need a cache bust"
+    [ -n "$dirty" ] && warn "uncommitted changes — review with 'git diff' first."
+  else
+    say "no files changed this session."
+  fi
 }
 trap cleanup EXIT
 
