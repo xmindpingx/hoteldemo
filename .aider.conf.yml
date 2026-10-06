@@ -38,6 +38,7 @@ auto-test: false
 # ---- git --------------------------------------------------------------------------------
 auto-commits: true
 dirty-commits: true
+show-diffs: true
 attribute-author: true
 attribute-committer: true
 gitignore: false               # .aider.* files are tracked in this repo on purpose; do not add them to .gitignore
