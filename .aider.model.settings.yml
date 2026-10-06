@@ -1,34 +1,33 @@
 # Project-level model settings for hoteldemosite. Loaded IN ADDITION to ~/.aider.model.settings.yml
 # (same model name here overrides the global entry).
 #
-# The default pair (gemma4:12b architect @24k ctx + qwen2.5-coder:7b editor @16k ctx) is defined
-# globally and was measured to fit together in 16 GB VRAM (~14.9 GB). Nothing to repeat here.
+# DEFAULT (defined globally, measured): gemma4:12b architect @24k + qwen2.5-coder:7b editor @16k
+#   -> ~14.9 GB of 16 GB VRAM, both resident.
 #
-# Below: an OPTIONAL stronger-coder architect. qwen2.5-coder:14b weights are 9.0 GB (vs 8.0 GB
-# for gemma4:12b), so its context is kept at 16k to leave room for the 7b editor. This pairing has
-# NOT been measured on this machine — run `ollama ps` during a session; if only one model is
-# resident, drop num_ctx to 12288 here AND in .aider.model.metadata.json AND start_aider.sh.
+# ALTERNATIVE below: qwen2.5-coder:14b as a SINGLE model (no architect/editor split).
+# Measured 2026-10-05 on this RX 6800 (Ollama, Q4_K_M):
+#   14b @24576 alone            -> 13 GB, fits (14.4 GB total VRAM in use)
+#   14b @16384 + 7b @16384      -> 12 GB + 5.6 GB, does NOT fit (7b evicted)
+#   14b @12288 + 7b @8192       -> does NOT fit
+#   14b @8192  + 7b @8192       -> fits only if 14b is loaded first; 8k is too small to be useful
+# So the 14b is run solo at 24k with the plain "diff" edit format (it writes the edits itself):
 #
-#   aider-hoteldemo --model ollama_chat/qwen2.5-coder:14b
+#   aider-hoteldemo --model ollama_chat/qwen2.5-coder:14b      # launcher switches to .aider.solo.conf.yml
 
 - name: ollama_chat/qwen2.5-coder:14b
   edit_format: diff
   use_repo_map: true
-  editor_model_name: ollama_chat/qwen2.5-coder:7b-instruct
-  editor_edit_format: editor-diff
   extra_params:
-    num_ctx: 16384
+    num_ctx: 24576
     num_predict: 4096
-    temperature: 0.2
+    temperature: 0.1
     keep_alive: 30m
 
 - name: ollama/qwen2.5-coder:14b
   edit_format: diff
   use_repo_map: true
-  editor_model_name: ollama/qwen2.5-coder:7b-instruct
-  editor_edit_format: editor-diff
   extra_params:
-    num_ctx: 16384
+    num_ctx: 24576
     num_predict: 4096
-    temperature: 0.2
+    temperature: 0.1
     keep_alive: 30m

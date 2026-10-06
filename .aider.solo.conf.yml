@@ -1,17 +1,10 @@
-# Aider project config for /home/dad/wwwhotel/hoteldemosite (the hotel website + admin CMS).
-# Overrides ~/.aider.conf.yml. Launch with:  aider-hoteldemo   (or ./start_aider.sh)
-#
-# Models, edit formats, num_ctx and context limits come from:
-#   ~/.aider.model.settings.yml + ~/.aider.model.metadata.json   (gemma4:12b architect, qwen2.5-coder:7b editor)
-#   ./.aider.model.settings.yml + ./.aider.model.metadata.json   (adds qwen2.5-coder:14b as a SOLO model @24k;
-#                                                                 the launcher uses .aider.solo.conf.yml for it)
+# SOLO config: used by start_aider.sh when the model is qwen2.5-coder:14b (no architect/editor split,
+# because 14b + 7b do not fit in 16 GB together). Everything else mirrors .aider.conf.yml.
+# Launch:  aider-hoteldemo --model ollama_chat/qwen2.5-coder:14b   (or: aider -c .aider.solo.conf.yml)
+# num_ctx 24576 for the 14b comes from ./.aider.model.settings.yml.
 
-# ---- architect mode (planner + editor) --------------------------------------------------
-architect: true
-model: ollama_chat/gemma4:12b
-editor-model: ollama_chat/qwen2.5-coder:7b-instruct
-editor-edit-format: editor-diff
-auto-accept-architect: false      # show the plan, ask y/n before the editor touches files
+model: ollama_chat/qwen2.5-coder:14b
+edit-format: diff
 
 # ---- standing context, loaded read-only every session ----------------------------------
 read:

@@ -35,3 +35,4 @@ logs/
 !.aider.model.settings.yml
 !.aider.model.metadata.json
 !.aiderignore
+!.aider.solo.conf.yml

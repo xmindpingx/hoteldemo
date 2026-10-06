@@ -3,8 +3,7 @@
 # (AMD RX 6800 16 GB VRAM, 15 GB RAM). Extra arguments are passed through to aider, e.g.
 #   ./start_aider.sh                                  # normal
 #   ./start_aider.sh --model ollama_chat/gemma4:e4b          # smaller/faster architect
-#   ./start_aider.sh --model ollama_chat/qwen2.5-coder:14b   # stronger coder as architect (16k ctx)
-#   ./start_aider.sh --no-architect                   # single-model mode
+#   ./start_aider.sh --model ollama_chat/qwen2.5-coder:14b   # stronger coder SOLO @24k (no architect; 14b+7b don't fit together)
 #
 # What it does: activates the venv, checks Ollama/models/.env, pre-loads BOTH models into
 # VRAM (editor first, then architect, so they stay resident together), runs aider, and
@@ -25,7 +24,8 @@ KEEP_ALIVE=30m
 for ((i=1; i<=$#; i++)); do
   if [ "${!i}" = "--model" ]; then j=$((i+1)); ARCHITECT="${!j}"; fi
 done
-case "$ARCHITECT" in *qwen2.5-coder:14b) ARCHITECT_CTX=16384 ;; esac   # must match ./.aider.model.settings.yml
+SOLO=0
+case "$ARCHITECT" in *qwen2.5-coder:14b) SOLO=1; ARCHITECT_CTX=24576 ;; esac   # must match ./.aider.model.settings.yml
 A_NAME=${ARCHITECT#*/}; E_NAME=${EDITOR_MODEL#*/}   # strip the ollama_chat/ prefix
 
 say()  { printf '\033[1;34m[start_aider]\033[0m %s\n' "$*"; }
@@ -46,6 +46,10 @@ curl -sf --max-time 5 "$OLLAMA/api/version" >/dev/null || die "Ollama is not rea
 for m in "$A_NAME" "$E_NAME"; do
   ollama list 2>/dev/null | awk '{print $1}' | grep -qx "$m" || die "model $m is not pulled (ollama pull $m)"
 done
+if [ "$SOLO" = 1 ]; then
+  say "solo mode: $A_NAME @ $ARCHITECT_CTX ctx, no editor model (measured: 14b + 7b do not fit in 16 GB together)"
+  set -- -c "$PROJECT/.aider.solo.conf.yml" "$@"   # aider 0.86 has no --no-architect; a config without architect: true is the way
+fi
 if [ -f .git/index.lock ]; then
   warn ".git/index.lock exists (stale lock from an interrupted git run). Removing it."
   rm -f .git/index.lock
@@ -63,13 +67,17 @@ load() { # model ctx
   curl -s --max-time 180 "$OLLAMA/api/generate" \
     -d "{\"model\":\"$1\",\"options\":{\"num_ctx\":$2},\"keep_alive\":\"$KEEP_ALIVE\"}" >/dev/null
 }
-say "loading editor    $E_NAME (num_ctx $EDITOR_CTX) ..."; load "$E_NAME" "$EDITOR_CTX"
-say "loading architect $A_NAME (num_ctx $ARCHITECT_CTX) ..."; load "$A_NAME" "$ARCHITECT_CTX"
-resident=$(ollama ps 2>/dev/null | awk 'NR>1{print $1}' | tr '\n' ' ')
-case "$resident" in
-  *"$A_NAME"*"$E_NAME"*|*"$E_NAME"*"$A_NAME"*) say "both models resident on the GPU: $resident" ;;
-  *) warn "only [$resident] is loaded; Ollama will reload models between architect and editor turns." ;;
-esac
+if [ "$SOLO" = 1 ]; then
+  say "loading $A_NAME (num_ctx $ARCHITECT_CTX) ..."; load "$A_NAME" "$ARCHITECT_CTX"
+else
+  say "loading editor    $E_NAME (num_ctx $EDITOR_CTX) ..."; load "$E_NAME" "$EDITOR_CTX"
+  say "loading architect $A_NAME (num_ctx $ARCHITECT_CTX) ..."; load "$A_NAME" "$ARCHITECT_CTX"
+  resident=$(ollama ps 2>/dev/null | awk 'NR>1{print $1}' | tr '\n' ' ')
+  case "$resident" in
+    *"$A_NAME"*"$E_NAME"*|*"$E_NAME"*"$A_NAME"*) say "both models resident on the GPU: $resident" ;;
+    *) warn "only [$resident] is loaded; Ollama will reload models between architect and editor turns." ;;
+  esac
+fi
 
 cleanup() {
   say "unloading models to free VRAM ..."
