@@ -237,6 +237,8 @@ api.post('/passphrase', needs('admin.passphrase'), (req, res) => {
   if (!auth.checkPassphrase(current)) return res.status(400).json({ error: 'Current passphrase is incorrect.' });
   if (typeof next !== 'string' || next.length < 6) return res.status(400).json({ error: 'New passphrase must be at least 6 characters.' });
   auth.setPassphrase(next);
+  // changing the passphrase signs out every other admin session; keep THIS one alive
+  if (!auth.isSuper(req)) auth.login(req, res);
   res.json({ ok: true });
 });
 

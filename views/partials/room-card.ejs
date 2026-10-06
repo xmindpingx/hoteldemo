@@ -1,7 +1,7 @@
 <%
   const g = site.general;
   const price = h.money(room.priceFrom, g.currency);
-  const book = room.bookHref || (g.bookingMode === 'external' && g.bookingUrl ? g.bookingUrl : `/contact?room=${encodeURIComponent(room.name)}`);
+  const book = room.bookHref || h.bookingHref(site, `/contact?room=${encodeURIComponent(room.name)}`);
   const specs = [
     room.sqft ? { icon: 'ruler', text: `${room.sqft} sq ft` } : null,
     room.beds ? { icon: 'bed', text: room.beds } : null,

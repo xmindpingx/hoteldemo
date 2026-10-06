@@ -135,7 +135,9 @@ function cap(list, n) {
 function apply(site, f = get()) {
   const on = (id) => enabled(id, f);
   const s = { ...site };
-  const copy = (k) => { s[k] = { ...(site[k] || {}) }; return s[k]; };
+  // Shallow-copy a branch exactly once; later calls return the SAME copy so earlier edits survive
+  // (re-copying from `site` would silently undo e.g. rooms.enabled=false when maxRooms also applies).
+  const copy = (k) => { if (s[k] === site[k]) s[k] = { ...(site[k] || {}) }; return s[k]; };
 
   // pages / sections → the existing `enabled` switches that routes, views and the sitemap already honour
   if (!on('page.suites')) copy('rooms').enabled = false;
@@ -163,7 +165,7 @@ function apply(site, f = get()) {
   // booking
   if (!on('booking.inquiryForm')) copy('contact').formEnabled = false;
   if (!on('booking.externalLink') && general.bookingMode === 'external') general.bookingMode = 'inquiry';
-  if (!on('page.contact') && general.bookingMode !== 'external') { /* no contact page, no external link: keep the button but it lands on home */ general.bookingUrl = general.bookingUrl || ''; }
+  // (no contact page + no external link → helpers.bookingHref() sends "Check Rates" to tel:phone, see src/helpers.js)
 
   // nav: drop links to pages that no longer exist
   const gone = [];
@@ -175,15 +177,21 @@ function apply(site, f = get()) {
   if (!on('page.reviews')) gone.push('/reviews');
   if (!on('page.contact')) gone.push('/contact');
   if (gone.length) {
-    s.nav = (site.nav || []).filter((n) => !gone.some((g) => String(n.href || '').startsWith(g)));
-    s.footer = { ...(site.footer || {}), links: ((site.footer || {}).links || []).filter((l) => !gone.some((g) => String(l.href || '').startsWith(g))) };
+    const isGone = (href) => gone.some((g) => String(href || '').startsWith(g));
+    s.nav = (site.nav || []).filter((n) => !isGone(n.href));
+    s.footer = { ...(site.footer || {}), links: ((site.footer || {}).links || []).filter((l) => !isGone(l.href)) };
+    // admin-entered call-to-action buttons: blank the href so the view hides the button (or falls back to the booking link)
+    if (isGone(hero.ctaHref)) hero.ctaHref = '';
+    if (isGone(hero.secondaryCtaHref)) hero.secondaryCtaHref = '';
+    const promos = copy('promotions');
+    promos.items = (promos.items || []).map((p) => (p && isGone(p.ctaHref) ? { ...p, ctaHref: '' } : p));
   }
 
-  // limits
-  if (limit('maxRooms', f)) copy('rooms').items = cap(site.rooms.items, limit('maxRooms', f));
-  if (limit('maxGalleryItems', f)) copy('gallery').items = cap(site.gallery.items, limit('maxGalleryItems', f));
-  if (limit('maxPromotions', f)) copy('promotions').items = cap(site.promotions.items, limit('maxPromotions', f));
-  if (limit('maxFaq', f)) copy('faq').items = cap(site.faq.items, limit('maxFaq', f));
+  // limits (cap the copies, so edits made above survive)
+  if (limit('maxRooms', f)) copy('rooms').items = cap(copy('rooms').items, limit('maxRooms', f));
+  if (limit('maxGalleryItems', f)) copy('gallery').items = cap(copy('gallery').items, limit('maxGalleryItems', f));
+  if (limit('maxPromotions', f)) copy('promotions').items = cap(copy('promotions').items, limit('maxPromotions', f));
+  if (limit('maxFaq', f)) copy('faq').items = cap(copy('faq').items, limit('maxFaq', f));
 
   // theme
   if (!on('admin.customCss')) copy('theme').customCss = '';

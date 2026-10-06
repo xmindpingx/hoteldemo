@@ -6,6 +6,8 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // for style="background-image:…" set via setAttribute (a plain string, NOT HTML): escape for a CSS string, never esc()
+  const cssUrl = (u) => `url("${String(u == null ? '' : u).replace(/[\r\n]/g, '').replace(/[\\"]/g, (c) => '\\' + c)}")`;
   const clone = (v) => JSON.parse(JSON.stringify(v));
   const uid = (p = 'id') => `${p}-${Math.random().toString(16).slice(2, 10)}`;
 
@@ -380,7 +382,7 @@
     } });
     const media = featureOn('admin.media');
     const controls = h('div', { class: 'controls' },
-      media ? h('button', { type: 'button', class: 'btn btn-sm', html: svg('upload') + ' Upload', onclick: () => file.click() }) : h('span', { class: 'muted small', title: 'Uploads are not in your plan — paste an image URL instead' , html: svg('lock') + ' uploads not in plan' }),
+      media ? h('button', { type: 'button', class: 'btn btn-sm', html: svg('upload') + ' Upload', onclick: () => file.click() }) : h('span', { class: 'btn btn-sm locked-inline', title: 'Uploads are not in your plan — paste an image URL instead', html: svg('lock') + ' uploads not in plan' }),
       media ? h('button', { type: 'button', class: 'btn btn-sm', html: svg('image') + ' Library', onclick: () => openLibrary((url) => { input.value = url; input.dispatchEvent(new Event('input', { bubbles: true })); }) }) : null,
       h('button', { type: 'button', class: 'btn btn-sm', html: svg('x') + ' Clear', onclick: () => { input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true })); } }),
       file,
@@ -463,7 +465,7 @@
         const li = h('div', { class: `list-item ${collapsed ? 'collapsed' : ''} ${item.enabled === false ? 'disabled' : ''}`, dataset: { itemPath: JSON.stringify([...path, i]), labelKey: f.itemLabel || '' } });
         const head = h('div', { class: 'li-head', onclick: (e) => { if (e.target.closest('button')) return; if (state.collapsed.has(key)) state.collapsed.delete(key); else state.collapsed.add(key); li.classList.toggle('collapsed'); } },
           h('span', { html: svg('chevron'), style: 'width:16px;height:16px;display:inline-block;opacity:.6' }),
-          f.thumb && item[f.thumb] ? h('span', { class: 'li-thumb', style: `background-image:url("${esc(item[f.thumb])}")` }) : null,
+          f.thumb && item[f.thumb] ? h('span', { class: 'li-thumb', style: `background-image:${cssUrl(item[f.thumb])}` }) : null,
           h('span', { class: 'title', dataset: { fallback: `${f.label.replace(/s$/, '')} ${i + 1}` } }, itemTitle(f, item, i)),
           item.enabled === false ? h('span', { class: 'meta' }, 'hidden') : null,
           h('button', { type: 'button', class: 'btn btn-icon', title: 'Move up', html: svg('up'), onclick: () => { if (i > 0) { [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]]; markDirty(); rerender(); } } }),
@@ -545,7 +547,7 @@
       const property = ['/img/property/courtyard.jpg', '/img/property/suite-entrance.jpg', '/img/property/office.jpg', '/img/property/suite-king.jpg', '/img/property/suite-queen.jpg'].map((u) => ({ url: u, name: u.split('/').pop() }));
       const all = [...r.files, ...property];
       if (!all.length) grid.append(h('div', { class: 'muted' }, 'No uploads yet.'));
-      all.forEach((f) => grid.append(h('div', { class: 'm', style: 'cursor:pointer', onclick: () => { onPick(f.url); bg.remove(); } }, h('div', { class: 'img', style: `background-image:url("${esc(f.url)}")` }), h('div', { class: 'nm', title: f.name }, f.name))));
+      all.forEach((f) => grid.append(h('div', { class: 'm', style: 'cursor:pointer', onclick: () => { onPick(f.url); bg.remove(); } }, h('div', { class: 'img', style: `background-image:${cssUrl(f.url)}` }), h('div', { class: 'nm', title: f.name }, f.name))));
     }).catch((e) => { grid.innerHTML = `<div class="alert alert-error">${esc(e.message)}</div>`; });
   }
 
@@ -587,7 +589,7 @@
     container.innerHTML = '';
     const file = h('input', { type: 'file', accept: 'image/*', multiple: true, class: 'hidden', onchange: async (e) => { try { await uploadFiles(e.target.files); toast('Uploaded', 'ok'); renderMedia(container); } catch (err) { toast(err.message, 'err'); } } });
     const grid = h('div', { class: 'media-grid' });
-    r.files.forEach((f) => grid.append(h('div', { class: 'm' }, h('div', { class: 'img', style: `background-image:url("${esc(f.url)}")` }), h('div', { class: 'nm', title: f.name }, f.name),
+    r.files.forEach((f) => grid.append(h('div', { class: 'm' }, h('div', { class: 'img', style: `background-image:${cssUrl(f.url)}` }), h('div', { class: 'nm', title: f.name }, f.name),
       h('div', { class: 'acts' }, h('button', { type: 'button', class: 'btn btn-sm', title: 'Copy URL', html: svg('copy'), onclick: () => { navigator.clipboard.writeText(f.url).then(() => toast('URL copied', 'ok')); } }), h('a', { class: 'btn btn-sm', href: f.url, target: '_blank', html: svg('external') }),
         h('button', { type: 'button', class: 'btn btn-sm btn-danger', html: svg('trash'), onclick: async () => { if (confirm(`Delete ${f.name}? Pages still referencing it will show a broken image.`)) { await api(`/uploads/${encodeURIComponent(f.name)}`, { method: 'DELETE' }); renderMedia(container); } } })))));
     container.append(h('div', { class: 'card' },

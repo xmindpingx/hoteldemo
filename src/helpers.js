@@ -111,6 +111,8 @@ function siteTitle(site, pageTitle) {
 function bookingHref(site, fallback = '/contact') {
   const g = site.general;
   if (g.bookingMode === 'external' && g.bookingUrl) return g.bookingUrl;
+  // contact page switched off (admin or plan) and no booking engine: "Check Rates" becomes a phone call
+  if (site.contact && site.contact.enabled === false && String(fallback).startsWith('/contact')) return telHref(g.phone) || '/';
   return fallback;
 }
 

@@ -76,6 +76,8 @@ api.post('/passphrase', (req, res) => {
   if (typeof next !== 'string' || next.length < 8) return res.status(400).json({ error: 'New passphrase must be at least 8 characters.' });
   if (auth.checkPassphrase(next)) return res.status(400).json({ error: 'Use a passphrase different from the hotel admin passphrase.' });
   auth.setSuperPassphrase(next);
+  // changing the passphrase signs out every other superadmin session; keep THIS one alive
+  auth.loginSuper(req, res);
   res.json({ ok: true });
 });
 
@@ -84,8 +86,10 @@ api.post('/admin-passphrase', (req, res) => {
   const { next } = req.body || {};
   if (process.env.ADMIN_PASSPHRASE) return res.status(400).json({ error: 'The admin passphrase is fixed by the ADMIN_PASSPHRASE environment variable on the server.' });
   if (typeof next !== 'string' || next.length < 6) return res.status(400).json({ error: 'New passphrase must be at least 6 characters.' });
+  // never hand the hotel the superadmin passphrase by accident
+  if (auth.checkSuperPassphrase(next)) return res.status(400).json({ error: 'That is the superadmin passphrase — give the hotel a different one.' });
   auth.setPassphrase(next);
-  res.json({ ok: true });
+  res.json({ ok: true, note: 'Existing hotel admin sessions have been signed out.' });
 });
 
 router.use('/api', api);

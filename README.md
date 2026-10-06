@@ -88,7 +88,9 @@ same page. You can also run `npm run reset:blank` / `npm run reset:mock` on the 
 ### Passphrase
 
 Default is `hoteldemo`. Change it under *Data, Reset & Security* (stored hashed in `data/admin.json`),
-or the vendor can reset it from `/superadmin` without knowing the current one. To force a
+or the vendor can reset it from `/superadmin` without knowing the current one. Changing or resetting
+a passphrase signs out every other session of that role immediately (the one that made the change
+stays signed in). To force a
 passphrase from the server instead, set `ADMIN_PASSPHRASE` (in `ecosystem.config.cjs` or the
 environment) — it then overrides the panel. Forgot a changed passphrase and no superadmin access?
 Delete `data/admin.json` and the default returns.

@@ -96,6 +96,27 @@ if [ "$code" = "200" ] && ! grep -q '/gallery' "$TMP/sitemap.xml" && ! grep -q '
   ok "/sitemap.xml excludes disabled pages"
 else bad "/sitemap.xml still lists a disabled page (code=$code)"; fi
 
+echo "== page off + limit on the same section, contact page off (apply() regressions)"
+node -e "
+  const fs = require('fs');
+  const f = JSON.parse(fs.readFileSync('$TMP/feat-update.json', 'utf8'));   // keeps gallery/amenities off + the price meta
+  f.flags['page.suites'] = false; f.limits.maxRooms = 1;   // a limit must never re-enable a page that is off
+  f.flags['page.contact'] = false;                          // no contact page + inquiry mode → CTA becomes tel:
+  fs.writeFileSync('$TMP/feat-combo.json', JSON.stringify(f));
+"
+curl -s -o /dev/null --max-time 8 -b "$JAR" -X PUT "$B/superadmin/api/features" -H 'X-Requested-With: fetch' -H 'Content-Type: application/json' --data-binary "@$TMP/feat-combo.json"
+code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "$B/suites")
+[ "$code" = "302" ] && ok "/suites still redirects when page.suites is off AND maxRooms is set" || bad "/suites → $code with page.suites off + maxRooms=1 (limit re-enabled the page?)"
+code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "$B/contact")
+[ "$code" = "302" ] && ok "/contact redirects when page.contact is off" || bad "/contact → $code (expected 302)"
+curl -s --max-time 8 -o "$TMP/home2.html" "$B/"
+if grep -q 'href="/suites' "$TMP/home2.html"; then bad "/ still has a call-to-action pointing at /suites (hero/promo CTA not scrubbed)"; else ok "/ has no hero/promo CTA pointing at the disabled /suites page"; fi
+if grep -q 'href="/contact' "$TMP/home2.html"; then bad "/ still links to the disabled /contact page"; else ok "/ has no link to the disabled /contact page"; fi
+grep -q 'href="tel:' "$TMP/home2.html" && ok "\"Check Availability\" falls back to a tel: link" || bad "no tel: fallback for the booking button when the contact page is off"
+grep -q 'data-booking-bar' "$TMP/home2.html" && bad "hero booking bar (a form posting to /contact) still rendered with the contact page off" || ok "hero booking bar hidden with the contact page off"
+curl -s --max-time 8 -o "$TMP/sitemap2.xml" "$B/sitemap.xml"
+grep -q '/suites' "$TMP/sitemap2.xml" && bad "/sitemap.xml still lists /suites or room pages" || ok "/sitemap.xml has no suites/room URLs"
+
 echo "== hotel admin reflects the lock"
 code=$(curl -s -o "$TMP/admeta.json" -w '%{http_code}' --max-time 8 -b "$JAR" "$B/admin/api/meta" -H 'X-Requested-With: fetch')
 if [ "$code" = "200" ]; then
@@ -139,8 +160,18 @@ else
 fi
 
 echo "== passphrase changes"
+curl -s -o /dev/null --max-time 8 -c "$TMP/jarA.txt" -X POST "$B/admin/login" -d 'passphrase=hoteldemo'
+code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 -b "$TMP/jarA.txt" "$B/admin/api/site" -H 'X-Requested-With: fetch')
+[ "$code" = "200" ] && ok "hotel admin session (default passphrase) works before the reset" || bad "hotel admin login before reset → $code"
+
+code=$(curl -s -o "$TMP/pw0.json" -w '%{http_code}' --max-time 8 -b "$JAR" -X POST "$B/superadmin/api/admin-passphrase" -H 'X-Requested-With: fetch' -H 'Content-Type: application/json' -d '{"next":"hotelsuper"}')
+[ "$code" = "400" ] && ok "vendor cannot set the hotel passphrase equal to the superadmin passphrase → 400" || bad "hotel passphrase = super passphrase accepted → $code"
+
 code=$(curl -s -o "$TMP/pw1.json" -w '%{http_code}' --max-time 8 -b "$JAR" -X POST "$B/superadmin/api/admin-passphrase" -H 'X-Requested-With: fetch' -H 'Content-Type: application/json' -d '{"next":"newhotelpass"}')
 [ "$code" = "200" ] && ok "superadmin resets hotel admin passphrase → 200" || bad "reset hotel admin passphrase → $code"
+
+code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 -b "$TMP/jarA.txt" "$B/admin/api/site" -H 'X-Requested-With: fetch')
+[ "$code" = "401" ] && ok "the hotel admin session from before the reset is signed out → 401" || bad "old hotel admin session still valid after reset → $code"
 
 code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 -c "$TMP/jar2.txt" -X POST "$B/admin/login" -d 'passphrase=newhotelpass')
 [ "$code" = "302" ] && ok "hotel admin logs in with the newly-set passphrase → 302" || bad "hotel admin login with new passphrase → $code"
@@ -151,8 +182,13 @@ code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 -c "$TMP/jar3.txt" -X
 code=$(curl -s -o "$TMP/pw2.json" -w '%{http_code}' --max-time 8 -b "$JAR" -X POST "$B/superadmin/api/passphrase" -H 'X-Requested-With: fetch' -H 'Content-Type: application/json' -d '{"current":"wrongcurrent","next":"newsuperpass123"}')
 [ "$code" = "400" ] && ok "superadmin passphrase change with wrong current → 400" || bad "superadmin passphrase change wrong current → $code"
 
-code=$(curl -s -o "$TMP/pw3.json" -w '%{http_code}' --max-time 8 -b "$JAR" -X POST "$B/superadmin/api/passphrase" -H 'X-Requested-With: fetch' -H 'Content-Type: application/json' -d '{"current":"hotelsuper","next":"newsuperpass123"}')
+cp "$JAR" "$TMP/jar-super-old.txt"
+code=$(curl -s -o "$TMP/pw3.json" -w '%{http_code}' --max-time 8 -b "$JAR" -c "$JAR" -X POST "$B/superadmin/api/passphrase" -H 'X-Requested-With: fetch' -H 'Content-Type: application/json' -d '{"current":"hotelsuper","next":"newsuperpass123"}')
 [ "$code" = "200" ] && ok "superadmin passphrase change with correct current → 200" || bad "superadmin passphrase change correct current → $code, body: $(cat "$TMP/pw3.json")"
+code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 -b "$TMP/jar-super-old.txt" "$B/superadmin/api/features")
+[ "$code" = "401" ] && ok "previous superadmin session is signed out after the change → 401" || bad "old superadmin session still valid → $code"
+code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 -b "$JAR" "$B/superadmin/api/features")
+[ "$code" = "200" ] && ok "the session that changed the passphrase stays signed in (refreshed cookie) → 200" || bad "refreshed superadmin cookie rejected → $code"
 
 echo "== enable-all restores everything"
 code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 -b "$JAR" -X POST "$B/superadmin/api/features/all" -H 'X-Requested-With: fetch' -H 'Content-Type: application/json' -d '{"enabled":true}')

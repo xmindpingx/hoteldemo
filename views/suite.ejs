@@ -4,7 +4,7 @@
   const g = site.general;
   const images = [room.image, ...(room.images || [])].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
   const price = h.money(room.priceFrom, g.currency);
-  const book = room.bookHref || (g.bookingMode === 'external' && g.bookingUrl ? g.bookingUrl : `/contact?room=${encodeURIComponent(room.name)}`);
+  const book = room.bookHref || h.bookingHref(site, `/contact?room=${encodeURIComponent(room.name)}`);
   const specs = [
     room.sqft ? { icon: 'ruler', label: 'Size', text: `${room.sqft} sq ft` } : null,
     room.beds ? { icon: 'bed', label: 'Beds', text: room.beds } : null,
@@ -57,7 +57,7 @@
     <div class="lg:sticky lg:top-28 rounded-2xl ring-1 ring-black/5 shadow-lg p-6 bg-white">
       <% if (price) { %><div class="text-sm text-gray-500">From</div><div class="font-heading text-4xl text-gray-900"><%= price %></div><% } else { %><div class="font-heading text-2xl text-gray-900">Rates on request</div><% } %>
       <% if (room.priceNote) { %><div class="text-sm text-gray-500 mt-1"><%= room.priceNote %></div><% } %>
-      <% if (g.bookingMode !== 'external' && !room.bookHref) { %>
+      <% if (g.bookingMode !== 'external' && !room.bookHref && site.contact.enabled !== false) { %>
       <form action="/contact" method="get" class="mt-5 grid grid-cols-2 gap-3">
         <input type="hidden" name="room" value="<%= room.name %>">
         <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">Check-in<input type="date" name="checkin" class="field mt-1" data-checkin></label>
@@ -67,7 +67,7 @@
         <button type="submit" class="btn btn-primary col-span-2 py-3 mt-1"><%= g.bookNowLabel || 'Check Rates' %></button>
       </form>
       <% } else { %>
-      <a href="<%= book %>" target="_blank" rel="noopener" class="btn btn-primary w-full py-3 mt-5"><%= g.bookNowLabel || 'Book Now' %><%- icon('external', 'w-4 h-4') %></a>
+      <a href="<%= book %>" <%= /^https?:/i.test(book) ? 'target="_blank" rel="noopener"' : '' %> class="btn btn-primary w-full py-3 mt-5"><%= g.bookNowLabel || 'Book Now' %><%- icon('external', 'w-4 h-4') %></a>
       <% } %>
       <% if (g.phone) { %><a href="<%= h.telHref(g.phone) %>" class="mt-3 btn btn-outline w-full py-3"><%- icon('phone', 'w-4 h-4') %>Call <%= g.phone %></a><% } %>
       <% if (g.checkInTime || g.checkOutTime) { %><p class="mt-4 text-xs text-gray-500 text-center"><% if (g.checkInTime) { %>Check-in <%= g.checkInTime %><% } %><% if (g.checkInTime && g.checkOutTime) { %> · <% } %><% if (g.checkOutTime) { %>Check-out <%= g.checkOutTime %><% } %></p><% } %>

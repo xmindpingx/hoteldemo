@@ -186,29 +186,23 @@ table.tbl tr.unread td { background: #fffbeb; }
 .seo-check.warn { background: #fffbeb; }
 .pill.bad { background: #fee2e2; color: #991b1b; }
 
-/* feature locks (plan/entitlement gating) */
-.locked { border: 1px dashed #d1d5db; border-radius: 10px; background: #f9fafb; padding: 22px 20px; text-align: center; display: grid; gap: 8px; justify-items: center; }
-.locked .locked-icon { width: 34px; height: 34px; border-radius: 50%; background: #eef2f7; color: var(--muted); display: grid; place-items: center; }
-.locked .locked-icon svg { width: 18px; height: 18px; }
-.locked .locked-label { font-weight: 700; font-size: 14px; }
-.locked .locked-desc { font-size: 12.5px; color: var(--muted); max-width: 420px; }
-.locked .locked-upgrade { font-size: 12.5px; color: #374151; max-width: 440px; }
-.locked .locked-price { display: inline-block; margin-top: 2px; padding: 3px 10px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; }
-.locked .locked-note { font-size: 11.5px; color: var(--muted); font-style: italic; max-width: 420px; }
-.locked .locked-contact { font-size: 12.5px; font-weight: 600; }
-.locked .locked-plan { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
-.locked-compact { border: 1px dashed #d1d5db; border-radius: 8px; background: #f9fafb; padding: 10px 12px; display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; color: var(--muted); }
-.locked-compact .locked-icon { width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; background: #eef2f7; color: var(--muted); display: grid; place-items: center; }
-.locked-compact .locked-icon svg { width: 13px; height: 13px; }
-.locked-compact .locked-body { display: grid; gap: 2px; }
-.locked-compact .locked-label { font-weight: 700; color: #374151; }
-.locked-compact .locked-price { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 700; }
+/* feature locks (plan/entitlement gating) — markup comes from renderLocked() in admin.js */
+.locked { border: 1px dashed #d1d5db; border-radius: 10px; background: #f9fafb; padding: 22px 20px; text-align: center; display: grid; gap: 6px; justify-items: center; }
+.locked > .locked-icon { width: 34px; height: 34px; border-radius: 50%; background: #eef2f7; color: var(--muted); display: grid; place-items: center; margin-bottom: 4px; }
+.locked > .locked-icon svg { width: 18px; height: 18px; }
+.locked h2 { font-size: 16px; }
+.locked p { margin: 0; font-size: 13px; max-width: 460px; }
+.locked .pill { background: #fef3c7; color: #92400e; }
+.locked-compact.locked { padding: 8px 12px; text-align: left; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-items: start; font-size: 12.5px; color: var(--muted); border-radius: 8px; }
+.locked-compact > span:first-child { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #eef2f7; align-items: center; justify-content: center; flex-shrink: 0; color: var(--muted); }
+.locked-compact > span:first-child svg { width: 12px; height: 12px; }
+.locked-compact strong { color: #374151; }
+.locked-inline { cursor: default; color: var(--muted); border-style: dashed; background: #f9fafb; }
+.locked-inline:hover { background: #f9fafb; border-color: var(--line); }
 .sidebar a.nav.locked-nav { color: #64748b; }
-.sidebar a.nav .nav-lock { margin-left: auto; opacity: .7; width: 13px; height: 13px; flex-shrink: 0; }
+.sidebar a.nav .nav-lock { margin-left: auto; display: inline-flex; opacity: .7; }
+.sidebar a.nav .nav-lock svg { width: 13px; height: 13px; }
 .seo-tab.locked-tab { color: #9ca3af; }
-.seo-tab.locked-tab .nav-lock { width: 12px; height: 12px; margin-left: 2px; }
-.plan-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #eef2f7; color: #374151; margin-bottom: 6px; }
-.plan-pill.warn { background: #fffbeb; color: #92400e; }
 
 /* superadmin feature list */
 .feature-list { display: grid; gap: 10px; }

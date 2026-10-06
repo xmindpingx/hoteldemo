@@ -82,15 +82,26 @@ function passphraseSource() {
 }
 
 // ---------- session cookie ----------
-function sign(payload) {
-  return crypto.createHmac('sha256', store.getSecret()).update(payload).digest('hex');
+/**
+ * HMAC key = server secret + the time that role's passphrase was last changed. Changing or resetting
+ * a passphrase therefore invalidates every existing session of that role at once (there is no
+ * server-side session list to purge). Env-var passphrases never change, so their key is stable.
+ */
+function signingKey(role) {
+  const cfg = store.getAdminConfig();
+  const stamp = role === 'super' ? cfg.superPassphraseUpdatedAt : cfg.passphraseUpdatedAt;
+  return `${store.getSecret()}|${role}|${stamp || ''}`;
+}
+
+function sign(payload, role) {
+  return crypto.createHmac('sha256', signingKey(role)).update(payload).digest('hex');
 }
 
 function issueToken(role = 'admin') {
   const exp = Date.now() + SESSION_TTL_MS;
   const nonce = crypto.randomBytes(8).toString('hex');
   const payload = `${exp}.${nonce}.${role}`;
-  return `${payload}.${sign(payload)}`;
+  return `${payload}.${sign(payload, role)}`;
 }
 
 /** Returns the role ('admin' | 'super') carried by a valid token, or false. */
@@ -101,7 +112,7 @@ function verifyToken(token, role = 'admin') {
   const [exp, nonce, r, sig] = parts;
   if (r !== role) return false;
   if (!/^\d+$/.test(exp) || Number(exp) < Date.now()) return false;
-  const expected = sign(`${exp}.${nonce}.${r}`);
+  const expected = sign(`${exp}.${nonce}.${r}`, r);
   return safeEqual(sig, expected) ? r : false;
 }
 

@@ -114,7 +114,11 @@
   document.addEventListener('input', (e) => {
     const el = e.target;
     if (el.dataset.k) setPath(el.dataset.k, el.value);
-    else if (el.dataset.meta) setPath('meta.' + el.dataset.meta, el.value);
+    else if (el.dataset.meta) {
+      // "page.gallery.price" → feature id "page.gallery" + key "price" (ids contain dots, so no setPath here)
+      const i = el.dataset.meta.lastIndexOf('.'), id = el.dataset.meta.slice(0, i), key = el.dataset.meta.slice(i + 1);
+      state.meta[id] = state.meta[id] || {}; state.meta[id][key] = el.value;
+    }
     else if (el.dataset.limit) state.limits[el.dataset.limit] = Math.max(0, Math.floor(Number(el.value) || 0));
     else return;
     markDirty();
