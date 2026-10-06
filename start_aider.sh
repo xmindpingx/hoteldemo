@@ -81,38 +81,34 @@ vram_used_mib() {  # prints MiB of VRAM in use, or nothing if it cannot be measu
   used=$(rocm-smi --showmeminfo vram 2>/dev/null | grep "Used" | grep -oE "[0-9]+$")
   [ -n "$used" ] && echo $((used/1048576))
 }
-gpu_users() {  # best-effort list of who holds the GPU: ollama models + other processes
-  local m
-  m=$(ollama ps 2>/dev/null | awk 'NR>1{print $1}' | tr '\n' ' ')
-  [ -n "$m" ] && printf 'ollama:[%s] ' "$m"
-  rocm-smi --showpids 2>/dev/null | awk '/^[0-9]+/{print $2}' | sort -u | tr '\n' ' '
+# other Ollama models on the GPU that are NOT ours, and how much they hold (MiB). Small ones (an
+# embedding model under 1 GB that another app keeps warm) are not worth waiting for.
+others_mib() {
+  ollama ps 2>/dev/null | awk -v a="$A_NAME" -v e="$E_NAME" 'NR>1 && $1!=a && $1!=e { v=$3; u=$4; if (u=="GB") v*=1024; if (u=="KB") v/=1024; s+=v } END { printf "%d", s+0 }'
 }
-if command -v rocm-smi >/dev/null 2>&1; then
-  used=$(vram_used_mib)
-  if [ -n "$used" ] && [ "$used" -gt "$GPU_FREE_THRESHOLD_MIB" ]; then
-    # our own models from a previous session do not count as "someone else"
-    others=$(ollama ps 2>/dev/null | awk 'NR>1{print $1}' | grep -v -e "^$A_NAME$" -e "^$E_NAME$" | tr '\n' ' ')
-    pids=$(rocm-smi --showpids 2>/dev/null | awk '/^[0-9]+/{print $2}' | grep -v -e '^ollama' | sort -u | tr '\n' ' ')
-    if [ -n "$others$pids" ] || [ "$used" -gt 15500 ]; then
-      waited=0
-      warn "GPU busy: ${used} MiB VRAM in use by $(gpu_users)"
-      if [ "$GPU_WAIT_MAX" -gt 0 ]; then
-        say "waiting up to $((GPU_WAIT_MAX/60)) min for it to be released (Ctrl-C to abort, --no-wait to skip) ..."
-        while [ "$waited" -lt "$GPU_WAIT_MAX" ]; do
-          sleep 15; waited=$((waited+15))
-          used=$(vram_used_mib)
-          [ -z "$used" ] && break
-          if [ "$used" -le "$GPU_FREE_THRESHOLD_MIB" ]; then say "GPU is free (${used} MiB in use) after ${waited}s"; break; fi
-          others=$(ollama ps 2>/dev/null | awk 'NR>1{print $1}' | grep -v -e "^$A_NAME$" -e "^$E_NAME$" | tr '\n' ' ')
-          pids=$(rocm-smi --showpids 2>/dev/null | awk '/^[0-9]+/{print $2}' | grep -v -e '^ollama' | sort -u | tr '\n' ' ')
-          if [ -z "$others$pids" ] && [ "$used" -le 15500 ]; then say "only our own models remain on the GPU; continuing"; break; fi
-          [ $((waited % 60)) -eq 0 ] && say "still waiting: ${used} MiB in use by $(gpu_users)"
-        done
-        [ "$waited" -ge "$GPU_WAIT_MAX" ] && warn "gave up waiting after $((GPU_WAIT_MAX/60)) min; launching anyway — expect Ollama to swap models (slower)."
-      else
-        warn "not waiting (--no-wait / GPU_WAIT_MAX=0); expect Ollama to swap models (slower) until that is freed."
-      fi
-    fi
+others_names() { ollama ps 2>/dev/null | awk -v a="$A_NAME" -v e="$E_NAME" 'NR>1 && $1!=a && $1!=e {print $1}' | tr '\n' ' '; }
+other_pids() { rocm-smi --showpids 2>/dev/null | awk '/^[0-9]+/{print $2}' | grep -v -e '^ollama' | sort -u | tr '\n' ' '; }
+gpu_busy() {  # 0 = something worth waiting for holds the GPU
+  local used; used=$(vram_used_mib); [ -z "$used" ] && return 1
+  [ "$used" -le "$GPU_FREE_THRESHOLD_MIB" ] && return 1
+  [ "$(others_mib)" -ge 1024 ] && return 0
+  [ -n "$(other_pids)" ] && return 0
+  [ "$used" -gt 15500 ] && return 0
+  return 1
+}
+if command -v rocm-smi >/dev/null 2>&1 && gpu_busy; then
+  warn "GPU busy: $(vram_used_mib) MiB VRAM in use — ollama:[$(others_names)] pids:[$(other_pids)]"
+  if [ "$GPU_WAIT_MAX" -gt 0 ]; then
+    say "waiting up to $((GPU_WAIT_MAX/60)) min for it to be released (Ctrl-C to abort, --no-wait to skip) ..."
+    waited=0
+    while gpu_busy && [ "$waited" -lt "$GPU_WAIT_MAX" ]; do
+      sleep 15; waited=$((waited+15))
+      [ $((waited % 60)) -eq 0 ] && say "still waiting (${waited}s): $(vram_used_mib) MiB in use — ollama:[$(others_names)] pids:[$(other_pids)]"
+    done
+    if gpu_busy; then warn "gave up after $((GPU_WAIT_MAX/60)) min; launching anyway — expect Ollama to swap models (slower)."
+    else say "GPU is free ($(vram_used_mib) MiB in use) after ${waited}s"; fi
+  else
+    warn "not waiting (--no-wait / GPU_WAIT_MAX=0); expect Ollama to swap models (slower) until that is freed."
   fi
 fi
 
