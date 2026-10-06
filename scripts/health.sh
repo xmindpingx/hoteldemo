@@ -9,7 +9,7 @@
 # Exit code 0 = healthy, 1 = something failed (for cron: mail the output when it exits 1).
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
-PORT="${PORT:-8097}"
+PORT="${PORT:-$(node -e "const e=require('./scripts/lib.cjs').loadPm2Env();console.log(e.PORT||8097)")}"
 QUICK=0; [ "${1:-}" = "--quick" ] && QUICK=1
 fail=0
 ok()   { printf '  PASS %s\n' "$*"; }
@@ -34,7 +34,7 @@ code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "http://127.0.0.1:$PO
 if [ "$code" = "401" ] || [ "$code" = "403" ] || [ "$code" = "302" ]; then ok "/admin/api/site without login → $code (locked)"; else bad "/admin/api/site without login → $code (should be 401/403/302)"; fi
 
 echo "== public URL"
-PUB=$(node -e "const s=require('./src/store').getSite();console.log(require('./src/seo').baseUrl(s))" 2>/dev/null)
+PUB=$(node -e "require('./scripts/lib.cjs').loadPm2Env();const s=require('./src/store').getSite();console.log(require('./src/seo').baseUrl(s))" 2>/dev/null)
 if [ -z "$PUB" ]; then
   warn "no public URL (set Site URL in Admin → SEO Wizard → Basics, or SITE_URL in ecosystem.config.cjs)"
 else

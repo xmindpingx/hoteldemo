@@ -17,6 +17,7 @@ import https from 'node:https';
 import http from 'node:http';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
+require('./lib.cjs').loadPm2Env();
 const seo = require('../src/seo');
 
 const args = process.argv.slice(2);

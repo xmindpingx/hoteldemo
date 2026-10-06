@@ -14,6 +14,7 @@
  */
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
+require('./lib.cjs').loadPm2Env(); // PORT / SITE_URL / DATA_DIR exactly as pm2 gives them to the server
 const store = require('../src/store');
 const seo = require('../src/seo');
 
